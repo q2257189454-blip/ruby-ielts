@@ -135,3 +135,9 @@ summary .chev{margin-left:auto;color:var(--muted);display:inline-flex}details[op
 .flow-step b{display:grid;place-items:center;background:#eaf0df;border-radius:50%;height:1.45rem;width:1.45rem;font-size:.77rem}
 .evidence-label{display:block;margin-top:1rem;margin-bottom:-.25rem;color:var(--muted);font-size:.8rem}
 .passage-lead{margin:1.2rem 0 1.6rem;padding-bottom:1.2rem;border-bottom:1px solid var(--line)}.passage-lead h3{color:var(--forest);font-size:1rem;margin-bottom:.7rem}
+
+.source-subheading { margin: 0 0 1rem; }
+.source-subheading h3 { margin: 0; color: var(--forest); }
+.original-only .source-subheading { display: block; margin-bottom: 1rem; }
+.passage-dialogue { margin: .8rem 0; padding: 0 0 0 1rem; border-left: 2px solid var(--line); }
+.dialogue-turn + .dialogue-turn { margin-top: .3rem; }

@@ -36,7 +36,8 @@ function listChrome(bookmarks){
 }
 function catalogRow(a){
   const names={heading:'Heading',contain:'Contain',tf:'判断',mc:'选择',fill:'填空',match:'匹配',ending:'句尾匹配',short:'简答'};
-  const types=(a.displayTypes||a.types||[]).map(k=>names[k]||k).join(' · ')||'纯阅读';
+  const readingLabel = a.sourceKind === 'background' ? '背景资料' : '纯阅读';
+  const types=(a.displayTypes||a.types||[]).map(k=>names[k]||k).join(' · ')||readingLabel;
   const meta=a.paragraphCount?`${a.paragraphCount} 段`:'';
   return `<div class="catalog-row table-cols ${a.highlight?'listed':''}" role="listitem"><a class="row-link" href="${esc(url(a.id))}">${partStamp(a.part)}<span class="row-copy"><span class="row-en" lang="en"><span class="title-text">${esc(a.en)}</span></span><span class="row-zh">${esc(a.zh)}${a.variants?' · '+a.variants.length+' 个版本':''}</span><span class="row-mobile-meta">${esc(types)}</span></span></a><div class="desktop-cell row-types">${esc(types)}</div><div class="desktop-cell row-size">${esc(meta)}</div>${star(a)}</div>`;
 }
@@ -92,6 +93,10 @@ const variantId=a.variants?.some(x=>x[0]===r.params.get('v'))?r.params.get('v'):
   try{note=await getJson('notes/'+variantId+'.json')}catch{if(token===fetchToken)noContent('这篇速记暂时未能载入');return}
   if(token!==fetchToken)return;
   currentRead={id:a.id};
+  if (r.tab === 'article' && !r.params.has('rev') && note.previousRefs) {
+    const oldRef = r.params.get('at');
+    if (Object.hasOwn(note.previousRefs, oldRef)) r.params.set('at', note.previousRefs[oldRef]);
+  }
   main.innerHTML=studyPage(a,note,r.tab,r.params,marks.has(a.id));
   const back=main.querySelector('[data-back-index]');if(back&&returnPage==='bookmarks'){back.href='#/bookmarks';back.innerHTML=icon('bookmark')+' 返回我的书签'}
   if(!r.params.get('at'))window.scrollTo({top:0,behavior:'instant'});
