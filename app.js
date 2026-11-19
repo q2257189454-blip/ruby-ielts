@@ -15,7 +15,34 @@ let marks=new Set(Array.isArray(stored)?stored:[]);
 let catalog=[],byId=new Map(),pageNow='',returnPage='index',slide=1,activeFilter=null,currentRead=null,fetchToken=0;
 const cache=new Map();
 const releaseQuery = new URL(import.meta.url).search;
-function getJson(path){if(!cache.has(path))cache.set(path,fetch('./data/'+path+releaseQuery).then(r=>{if(!r.ok)throw Error(String(r.status));return r.json()}).catch(e=>{cache.delete(path);throw e}));return cache.get(path)}
+async function loadJson(url) {
+  for (const retry of [false, true]) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), retry ? 30000 : 12000);
+    let retryable = true;
+    try {
+      const response = await fetch(url, {signal: controller.signal, cache: retry ? 'reload' : 'default'});
+      if (response.ok) return await response.json();
+      retryable = response.status === 408 || response.status >= 500;
+      throw new Error('HTTP ' + response.status);
+    } catch (error) {
+      if (retry || !retryable) throw error;
+    } finally {
+      clearTimeout(timer);
+    }
+    await new Promise(resolve => setTimeout(resolve, 400));
+  }
+}
+function getJson(path) {
+  if (!cache.has(path)) {
+    const pending = loadJson('./data/' + path + releaseQuery).catch(error => {
+      cache.delete(path);
+      throw error;
+    });
+    cache.set(path, pending);
+  }
+  return cache.get(path);
+}
 function selected(a,b){return a===b?' selected':''}
 function navStyle(page){document.querySelector('#nav-index').classList.toggle('active',page==='index');document.querySelector('#nav-marks').classList.toggle('active',page==='bookmarks');for(const [id,name] of [['nav-index','index'],['nav-marks','bookmarks']]){const link=document.getElementById(id);if(page===name)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current')}}
 function star(a){const on=marks.has(a.id);return `<button class="star" data-book="${esc(a.id)}" aria-pressed="${on}" aria-label="${on?'移除':'添加'}《${esc(a.en)}》书签" title="${on?'已加书签':'加入书签'}">${icon('bookmark')}</button>`}

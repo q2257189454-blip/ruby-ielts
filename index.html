@@ -8,7 +8,10 @@
   <title>Ruby · 雅思阅读速记本</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23163f35'/%3E%3Cpath d='M13 10h22v29l-11-7-11 7z' fill='%23dee99b'/%3E%3Cpath d='M18 17h12m-12 5h8' stroke='%23163f35' stroke-width='2.5'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="./style.css?v=880a511f87">
-  <script type="module" src="./app.js?v=f7488258dc"></script>
+  <link rel="modulepreload" href="./ui.js">
+  <link rel="modulepreload" href="./study.js?v=cb5495bc7b">
+  <link rel="preload" as="fetch" crossorigin="anonymous" href="./data/catalog.json?v=bded8fec43">
+  <script type="module" id="site-entry" src="./app.js?v=bded8fec43"></script>
 </head>
 <body>
   <a href="#main" class="skip" id="skip">跳到主要内容</a>
@@ -16,9 +19,35 @@
     <a href="#/index" class="brand" aria-label="Ruby 阅读速记首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span class="wordmark" lang="en">Ruby<span>.</span></span><span class="brand-sep"></span><span class="brand-cn">阅读速记</span></a>
     <nav aria-label="主导航"><a href="#/index" id="nav-index">篇目索引</a><a href="#/bookmarks" id="nav-marks"><span class="icon-place" aria-hidden="true"></span>我的书签<span id="mark-count" class="nav-count">0</span></a></nav>
   </div></header>
-  <main id="main" tabindex="-1"><div class="loading shell">正在载入阅读索引…</div></main>
+  <main id="main" tabindex="-1">
+    <div class="loading shell">
+      <p id="startup-status" role="status">正在载入阅读索引…</p>
+      <button class="btn" type="button" id="startup-retry" hidden>重新载入</button>
+      <noscript>请启用浏览器的 JavaScript 后重新打开。</noscript>
+    </div>
+  </main>
   <footer><div class="foot shell"><span><b>Ruby.</b> 雅思阅读速记本</span></div></footer>
   <div class="sr-only" id="status" role="status" aria-live="polite"></div>
+  <script>
+    (function () {
+      function offerReload(message) {
+        var status = document.getElementById('startup-status');
+        if (!status) return;
+        status.textContent = message;
+        document.getElementById('startup-retry').hidden = false;
+      }
+      var timer = setTimeout(function () {
+        offerReload('载入时间较长，可以继续等待或重新载入。');
+      }, 8000);
+      document.getElementById('site-entry').addEventListener('error', function () {
+        clearTimeout(timer);
+        offerReload('阅读速记暂时未能载入。');
+      });
+      document.getElementById('startup-retry').addEventListener('click', function () {
+        window.location.reload();
+      });
+    }());
+  </script>
 <!--
 Compiled, formatted, and lightly proofread by ZYZ Reading Walks. All copyright in the underlying works remains with the original authors and publishers. No affiliation with or endorsement by any rights holder (including IELTS® owners). For non-commercial educational use only. This notice must remain intact in all copies. Available free of charge from ZYZ Reading Walks. Resale or any paid distribution is prohibited.
 -->
