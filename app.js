@@ -1,5 +1,5 @@
 import {icon,esc,url,partStamp,safeGet,safeSet,announce} from './ui.js';
-import {studyPage,afterStudy,studyAction} from './study.js?v=6e44d76';
+import {studyPage,afterStudy,studyAction} from './study.js?v=cb5495bc7b';
 const main=document.querySelector('#main');
 const countEl=document.querySelector('#mark-count');
 const gridFilters={index:{part:'all',scope:'all',type:'all',q:'',page:0},bookmarks:{part:'all',scope:'all',type:'all',q:'',page:0}};
@@ -40,7 +40,10 @@ function catalogRow(a){
   const readingLabel = a.sourceKind === 'background' ? '背景资料' : '纯阅读';
   const types=(a.displayTypes||a.types||[]).map(k=>names[k]||k).join(' · ')||readingLabel;
   const meta=a.paragraphCount?`${a.paragraphCount} 段`:'';
-  return `<div class="catalog-row table-cols ${a.highlight?'listed':''}" role="listitem"><a class="row-link" href="${esc(url(a.id))}">${partStamp(a.part)}<span class="row-copy"><span class="row-en" lang="en"><span class="title-text">${esc(a.en)}</span></span><span class="row-zh">${esc(a.zh)}${a.variants?' · '+a.variants.length+' 个版本':''}</span><span class="row-mobile-meta">${esc(types)}</span></span></a><div class="desktop-cell row-types">${esc(types)}</div><div class="desktop-cell row-size">${esc(meta)}</div>${star(a)}</div>`;
+  const studyGroups = a.studyGroupCount ? `${a.studyGroupCount} 组速记` : '';
+  const mobileMeta = studyGroups ? [types, meta, studyGroups].join(' · ') : types;
+  const sizeDetail = studyGroups ? `<small class="row-study-groups">${esc(studyGroups)}</small>` : '';
+  return `<div class="catalog-row table-cols ${a.highlight?'listed':''}" role="listitem"><a class="row-link" href="${esc(url(a.id))}">${partStamp(a.part)}<span class="row-copy"><span class="row-en" lang="en"><span class="title-text">${esc(a.en)}</span></span><span class="row-zh">${esc(a.zh)}${a.variants?' · '+a.variants.length+' 个版本':''}</span><span class="row-mobile-meta">${esc(mobileMeta)}</span></span></a><div class="desktop-cell row-types">${esc(types)}</div><div class="desktop-cell row-size">${esc(meta)}${sizeDetail}</div>${star(a)}</div>`;
 }
 function lower(s){return String(s).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[\s’‘'"?.:·()\-_–—]/g,'')}
 function matched(){

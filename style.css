@@ -141,3 +141,8 @@ summary .chev{margin-left:auto;color:var(--muted);display:inline-flex}details[op
 .original-only .source-subheading { display: block; margin-bottom: 1rem; }
 .passage-dialogue { margin: .8rem 0; padding: 0 0 0 1rem; border-left: 2px solid var(--line); }
 .dialogue-turn + .dialogue-turn { margin-top: .3rem; }
+.pdf-page { margin-inline-start: auto; color: var(--muted); font: 400 .82rem var(--sans); white-space: nowrap; }
+.row-study-groups { display: block; color: var(--muted); font-size: .78rem; white-space: nowrap; }
+.logic-links.study-outline { display: grid; gap: .25rem; justify-items: start; }
+.study-outline button { display: grid; grid-template-columns: 5.4rem minmax(0,1fr); align-items: baseline; text-align: start; }
+.study-outline button b { white-space: nowrap; }
