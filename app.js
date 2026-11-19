@@ -1,5 +1,5 @@
 import {icon,esc,url,partStamp,safeGet,safeSet,announce} from './ui.js';
-import {studyPage,afterStudy,studyAction} from './study.js';
+import {studyPage,afterStudy,studyAction} from './study.js?v=6e44d76';
 const main=document.querySelector('#main');
 const countEl=document.querySelector('#mark-count');
 const gridFilters={index:{part:'all',scope:'all',type:'all',q:'',page:0},bookmarks:{part:'all',scope:'all',type:'all',q:'',page:0}};
@@ -14,7 +14,8 @@ const stored=safeGet('ruby.ielts.recall.bookmarks.v1',[]);
 let marks=new Set(Array.isArray(stored)?stored:[]);
 let catalog=[],byId=new Map(),pageNow='',returnPage='index',slide=1,activeFilter=null,currentRead=null,fetchToken=0;
 const cache=new Map();
-function getJson(path){if(!cache.has(path))cache.set(path,fetch('./data/'+path).then(r=>{if(!r.ok)throw Error(String(r.status));return r.json()}).catch(e=>{cache.delete(path);throw e}));return cache.get(path)}
+const releaseQuery = new URL(import.meta.url).search;
+function getJson(path){if(!cache.has(path))cache.set(path,fetch('./data/'+path+releaseQuery).then(r=>{if(!r.ok)throw Error(String(r.status));return r.json()}).catch(e=>{cache.delete(path);throw e}));return cache.get(path)}
 function selected(a,b){return a===b?' selected':''}
 function navStyle(page){document.querySelector('#nav-index').classList.toggle('active',page==='index');document.querySelector('#nav-marks').classList.toggle('active',page==='bookmarks');for(const [id,name] of [['nav-index','index'],['nav-marks','bookmarks']]){const link=document.getElementById(id);if(page===name)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current')}}
 function star(a){const on=marks.has(a.id);return `<button class="star" data-book="${esc(a.id)}" aria-pressed="${on}" aria-label="${on?'移除':'添加'}《${esc(a.en)}》书签" title="${on?'已加书签':'加入书签'}">${icon('bookmark')}</button>`}
