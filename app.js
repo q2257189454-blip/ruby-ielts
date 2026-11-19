@@ -96,7 +96,16 @@ const variantId=a.variants?.some(x=>x[0]===r.params.get('v'))?r.params.get('v'):
   currentRead={id:a.id};
   if (r.tab === 'article' && !r.params.has('rev') && note.previousRefs) {
     const oldRef = r.params.get('at');
-    if (Object.hasOwn(note.previousRefs, oldRef)) r.params.set('at', note.previousRefs[oldRef]);
+    if (Object.hasOwn(note.previousRefs, oldRef)) {
+      const returnTo = r.params.get('back') || '';
+      const question = returnTo.startsWith('q-')
+        ? note.groups.flatMap(group => group.items).find(item => String(item.no) === returnTo.slice(2))
+        : null;
+      const addresses = question
+        ? [question.ref, ...(question.refs || []), ...(question.correct || []).map(option => option[3])]
+        : [];
+      if (!addresses.includes(oldRef)) r.params.set('at', note.previousRefs[oldRef]);
+    }
   }
   main.innerHTML=studyPage(a,note,r.tab,r.params,marks.has(a.id));
   const back=main.querySelector('[data-back-index]');if(back&&returnPage==='bookmarks'){back.href='#/bookmarks';back.innerHTML=icon('bookmark')+' 返回我的书签'}
