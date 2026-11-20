@@ -1,0 +1,23 @@
+<svg font-family="Arial,Helvetica,sans-serif" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 625" role="img" aria-labelledby="title desc">
+ <title id="title">How library books return to the shelves</title>
+ <desc id="desc">Books enter a returns box, their barcodes are scanned and staff inspect the cover and pages. Intact books are sorted by call number and returned to their shelves. Damaged books are repaired and sent back for another inspection.</desc>
+ <rect width="920" height="625" fill="#f8faf9" rx="12"/>
+ <style>text{font-family:Arial,Helvetica,sans-serif;fill:#213a3c}.node{font-size:20px;font-weight:700;text-anchor:middle}.sub{font-size:14px;text-anchor:middle;fill:#405758}.branch{font-size:16px;font-weight:700}</style>
+ <defs><marker id="head" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#46686b"/></marker></defs>
+ <text x="29" y="45" font-size="25" font-weight="700">How library books return to the shelves</text>
+ <g fill="none" stroke="#46686b" stroke-width="3" stroke-linejoin="round">
+ <path d="M249 150H287"/><path d="M511 150H572"/>
+ <path d="M642 196V261H401V318"/>
+ <path d="M757 196V318"/>
+ <path d="M852 364H888V150H845"/>
+ <path d="M401 409V482"/>
+ </g>
+ <g><rect x="27" y="106" width="222" height="88" rx="10" fill="#edf3f5" stroke="#8ca5ae" stroke-width="2"/><text x="138.0" y="141" font-size="20" font-weight="700" text-anchor="middle">Return the book</text><text x="138.0" y="167" font-size="14" text-anchor="middle" fill="#405758">Reader uses the returns box</text></g>
+ <g><rect x="291" y="106" width="220" height="88" rx="10" fill="#edf3f5" stroke="#8ca5ae" stroke-width="2"/><text x="401.0" y="141" font-size="20" font-weight="700" text-anchor="middle">Scan barcode</text><text x="401.0" y="167" font-size="14" text-anchor="middle" fill="#405758">Clear loan from reader’s account</text></g>
+ <g><rect x="577" y="104" width="267" height="92" rx="10" fill="#f6e9cf" stroke="#b39a63" stroke-width="2"/><text x="710.5" y="139" font-size="20" font-weight="700" text-anchor="middle">Inspect cover and pages</text><text x="710.5" y="165" font-size="14" text-anchor="middle" fill="#405758">Check for tears or a loose cover</text></g>
+ <text x="411" y="248" font-size="16" font-weight="700">Intact</text><text x="762" y="264" font-size="16" font-weight="700">Damaged</text>
+ <g><rect x="280" y="324" width="242" height="84" rx="10" fill="#deede0" stroke="#86a38d" stroke-width="2"/><text x="401.0" y="359" font-size="20" font-weight="700" text-anchor="middle">Sort books</text><text x="401.0" y="385" font-size="14" text-anchor="middle" fill="#405758">Place on trolley by call number</text></g>
+ <g><rect x="638" y="324" width="214" height="84" rx="10" fill="#f3e2d8" stroke="#b3927a" stroke-width="2"/><text x="745.0" y="359" font-size="20" font-weight="700" text-anchor="middle">Repair at desk</text><text x="745.0" y="385" font-size="14" text-anchor="middle" fill="#405758">Mend torn pages or loose cover</text></g>
+ <text x="872" y="301" font-size="13" text-anchor="middle" transform="rotate(-90 872 301)">Recheck</text>
+ <g><rect x="257" y="489" width="288" height="87" rx="10" fill="#deede0" stroke="#86a38d" stroke-width="2"/><text x="401.0" y="524" font-size="20" font-weight="700" text-anchor="middle">Return to correct shelf</text><text x="401.0" y="550" font-size="14" text-anchor="middle" fill="#405758">Available for another reader to borrow</text></g>
+ <g fill="#46686b"><path d="M289 150l-10 -6v12z M575 150l-10 -6v12z M401 322l-6 -11h12z M757 322l-6 -11h12z M845 150l10 -6v12z M401 487l-6 -11h12z"/></g></svg>

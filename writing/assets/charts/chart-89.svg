@@ -1,0 +1,55 @@
+<svg font-family="Arial,Helvetica,sans-serif" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 445" role="img" aria-labelledby="title desc">
+ <title id="title">Northgate Park in 2000 and 2020</title>
+ <desc id="desc">North is up. The orchard became a playground, the north-east lawn a café, and the shed bicycle stands. A south gate and café paths were added. The central pond, original west gate and south-east lawn remain.</desc>
+ <rect width="900" height="445" rx="12" fill="#f8faf6"/>
+ <style>text{font-family:Arial,Helvetica,sans-serif;fill:#233b35}.yr{font-size:22px;font-weight:700;text-anchor:middle}.lb{font-size:15px;font-weight:600;text-anchor:middle}.en,.gate{font-size:13px;font-weight:600;fill:#456458}.gate{text-anchor:middle}</style>
+ <text x="26" y="36" font-size="25" font-weight="700">Northgate Park</text><text x="26" y="59" font-size="15">Site plans</text>
+ <g transform="translate(837 27)"><path d="M0 35 V7" stroke="#324b43" stroke-width="2.5"/><path d="M0 2 -5 12 0 10 5 12Z" fill="#324b43"/><text x="11" y="15" font-size="16" font-weight="700">N</text></g>
+ <g transform="translate(26 110)">
+ <text x="200" y="-15" font-size="22" font-weight="700" text-anchor="middle">2000</text>
+ <rect x="0" y="0" width="400" height="270" fill="#eef4e7"/>
+ <path d="M 0 184 H 216" fill="none" stroke="#b37a31" stroke-width="13" stroke-linejoin="round"/>
+ <path d="M 0 184 H 216" fill="none" stroke="#f5c36f" stroke-width="9" stroke-linejoin="round"/>
+ <path d="M 0 175 V 0 H 400 V 270 H 0 V 193" fill="none" stroke="#304e42" stroke-width="3"/>
+ <path d="M 0 174 v-6 m0 26v6" stroke="#304e42" stroke-width="5" />
+ <path d="M 174 119 Q 184 99 211 107 Q 230 100 243 117 Q 254 127 254 145 Q 248 159 225 160 Q 205 170 181 155 Q 163 141 174 119 Z" fill="#9ccdd2" stroke="#588c92" stroke-width="1.7" />
+ <text x="212" y="141" font-size="15" font-weight="600" text-anchor="middle">Pond</text>
+ <rect x="19" y="19" width="111" height="78" rx="5" fill="#c8debc" stroke="#6f9071" stroke-width="1.8"/>
+
+ <g fill="#699774" stroke="#375f47" stroke-width="1.2">
+   <circle cx="43" cy="44" r="6"/><circle cx="66" cy="44" r="6"/><circle cx="89" cy="44" r="6"/>
+   <circle cx="43" cy="60" r="6"/><circle cx="66" cy="60" r="6"/><circle cx="89" cy="60" r="6"/>
+ </g>
+ <text x="74" y="86" font-size="15" font-weight="600" text-anchor="middle">Orchard</text>
+ <rect x="288" y="23" width="95" height="77" rx="5" fill="#cfe3bb" stroke="#8da47a" stroke-width="1.6"/>
+ <text x="335" y="67" font-size="15" font-weight="600" text-anchor="middle">Open lawn</text>
+ <rect x="20" y="214" width="118" height="39" rx="4" fill="#e6ded0" stroke="#a49980" stroke-width="1.7"/>
+ <text x="79" y="239" font-size="15" font-weight="600" text-anchor="middle">Storage shed</text>
+ <rect x="297" y="212" width="86" height="43" rx="5" fill="#cfe3bb" stroke="#8da47a" stroke-width="1.5"/>
+ <text x="340" y="240" font-size="15" font-weight="600" text-anchor="middle">Lawn</text>
+ <text x="12" y="167" font-size="13" font-weight="600">West gate</text>
+
+ </g><g transform="translate(473 110)">
+ <text x="200" y="-15" font-size="22" font-weight="700" text-anchor="middle">2020</text>
+ <rect x="0" y="0" width="400" height="270" fill="#eef4e7"/>
+ <path d="M 0 184 H 216 H 337 V 99 M 216 184 V 270" fill="none" stroke="#b37a31" stroke-width="13" stroke-linejoin="round"/>
+ <path d="M 0 184 H 216 H 337 V 99 M 216 184 V 270" fill="none" stroke="#f5c36f" stroke-width="9" stroke-linejoin="round"/>
+ <path d="M 0 175 V 0 H 400 V 270 H 224 M 208 270 H 0 V 193" fill="none" stroke="#304e42" stroke-width="3"/>
+ <path d="M 0 174 v-6 m0 26v6" stroke="#304e42" stroke-width="5" />
+ <path d="M 174 119 Q 184 99 211 107 Q 230 100 243 117 Q 254 127 254 145 Q 248 159 225 160 Q 205 170 181 155 Q 163 141 174 119 Z" fill="#9ccdd2" stroke="#588c92" stroke-width="1.7" />
+ <text x="212" y="141" font-size="15" font-weight="600" text-anchor="middle">Pond</text>
+ <rect x="19" y="19" width="111" height="78" rx="5" fill="#f0d6a8" stroke="#b78745" stroke-width="1.8"/>
+ <g fill="none" stroke="#8e5d23" stroke-width="2.4" stroke-linecap="round"><path d="m40 61 9-21 9 21m-13-9h9m14 9V43h14l12 18m-24-13h8"/></g>
+ <text x="74" y="86" font-size="15" font-weight="600" text-anchor="middle">Playground</text>
+ <rect x="288" y="23" width="95" height="77" rx="5" fill="#ebc8aa" stroke="#ad8065" stroke-width="1.6"/>
+ <text x="335" y="67" font-size="15" font-weight="600" text-anchor="middle">Café</text>
+ <rect x="20" y="214" width="118" height="39" rx="4" fill="#dce3ee" stroke="#7c8f9e" stroke-width="1.7"/>
+ <text x="79" y="239" font-size="15" font-weight="600" text-anchor="middle">Bicycle stands</text>
+ <rect x="297" y="212" width="86" height="43" rx="5" fill="#cfe3bb" stroke="#8da47a" stroke-width="1.5"/>
+ <text x="340" y="240" font-size="15" font-weight="600" text-anchor="middle">Lawn</text>
+ <text x="12" y="167" font-size="13" font-weight="600">West gate</text>
+ <path d="M 206 270 h-6 m24 0 h6" stroke="#304e42" stroke-width="5"/><text x="216" y="292" font-size="13" font-weight="600" text-anchor="middle">South gate</text>
+ </g>
+ <path d="M32 416h38" stroke="#b37a31" stroke-width="10"/><path d="M32 416h38" stroke="#f5c36f" stroke-width="6"/>
+ <text x="81" y="421" font-size="15">Footpath</text>
+ </svg>
