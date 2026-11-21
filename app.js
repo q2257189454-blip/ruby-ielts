@@ -1,5 +1,5 @@
 import {icon,esc,url,partStamp,safeGet,safeSet,announce} from './ui.js';
-import {studyPage,afterStudy,studyAction} from './study.js?v=5e5a5475a9';
+import {studyPage,afterStudy,studyAction} from './study.js?v=94b06f1daa';
 const main=document.querySelector('#main');
 const countEl=document.querySelector('#mark-count');
 const gridFilters={index:{part:'all',scope:'all',type:'all',q:'',page:0},bookmarks:{part:'all',scope:'all',type:'all',q:'',page:0}};
@@ -119,7 +119,14 @@ async function route(){
   if(!a){pageNow='read';currentRead=null;navStyle('');noContent('未找到这个篇目');return}
   pageNow='read';activeFilter=null;navStyle(returnPage);document.title=a.zh+' · Ruby 雅思阅读速记';
   if(!currentRead||currentRead.id!==a.id){main.innerHTML='<div class="shell loading">正在打开阅读材料…</div>';window.scrollTo({top:0,behavior:'instant'})}
-const variantId=a.variants?.some(x=>x[0]===r.params.get('v'))?r.params.get('v'):a.id;
+  const background = a.variants?.find(([, , info]) => info?.sourceKind === 'background');
+  const previousAddress = r.params.get('at') || '';
+  if (background && r.tab === 'article' && !r.params.has('v') && /^(?:\d+\.\d+|p-\d+)$/.test(previousAddress)) {
+    // Background editions used numbered paragraphs. The new exam editions use letters.
+    r.params.set('v', background[0]);
+    history.replaceState(history.state, '', url(a.id, r.tab, Object.fromEntries(r.params)));
+  }
+  const variantId=a.variants?.some(x=>x[0]===r.params.get('v'))?r.params.get('v'):a.id;
   let note;
   try{note=await getJson('notes/'+variantId+'.json')}catch{if(token===fetchToken)noContent('这篇速记暂时未能载入');return}
   if(token!==fetchToken)return;

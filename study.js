@@ -114,6 +114,23 @@ function headingFlow(articleId, group, note) {
   return `<section class="heading-flow" id="${esc(id)}" aria-labelledby="${esc(id)}-title"><h4 id="${esc(id)}-title">全文行文流程</h4><ol>${steps}</ol></section>`;
 }
 
+function questionChoices(choices) {
+  if (!choices?.length) return '';
+  const items = choices.map(([label, english, chinese]) =>
+    `<span class="q-choice" role="listitem"><b>${esc(label)}</b><span><span lang="en">${esc(english)}</span><span class="q-zh">${esc(chinese)}</span></span></span>`
+  ).join('');
+  return `<span class="q-choices" role="list" aria-label="备选项">${items}</span>`;
+}
+
+function summaryContext(group) {
+  if (!group.context?.length) return '';
+  const [title, translation] = group.contextTitle || [];
+  const heading = title ? `<h4><span lang="en">${esc(title)}</span> <small>${esc(translation)}</small></h4>` : '';
+  const english = group.context.map(([en]) => `<p lang="en">${esc(en)}</p>`).join('');
+  const chinese = group.context.map(([, zh]) => `<p>${esc(zh)}</p>`).join('');
+  return `<div class="question-context">${heading}${english}<details class="source-block"><summary>查看摘要中文 ${icon('chevron')}</summary>${chinese}</details></div>`;
+}
+
 function questionCard(a,n,g,q){
   const qid='q-'+q.no;const key=a.id+':'+(new URLSearchParams(location.hash.split('?')[1]).get('v')||'')+':'+qid;const isOpen=questionOpen.get(key)===true;
   const headingCue=q.cue?`<span class="heading-cue">${esc(q.cue)}</span>`:'';
@@ -129,7 +146,7 @@ function questionCard(a,n,g,q){
     const solution = q.solution ? `<p class="answer-zh">${glossLabel}${esc(q.solution)}</p>` : '';
     answer=`<div class="q-answer"><span class="answer-label">${initial}</span><strong>${esc(value)}</strong></div>${solution}${q.why?`<p class="reason">${esc(q.why)}</p>`:''}${g.type!=='ending'&&q.ref?`${contextOnly?'<span class="evidence-label">相关原文</span>':''}<blockquote class="evidence" lang="en">${esc(addr(q.ref,n))}</blockquote>`:''}${refs.map(r=>loc(a.id,r,qid)).join('')}`;
   }
-  return `<details id="${esc(qid)}" class="q-card" data-qkey="${esc(key)}" ${isOpen?'open':''}><summary><span class="q-num">Q${esc(q.no)}</span><span><span class="q-en" lang="en">${esc(q.en)}</span><span class="q-zh">${esc(q.zh)}</span>${headingCue}${clue}</span><span class="reveal-cue"><span class="show">看答案</span><span class="hide">收起</span><span class="chev">${icon('chevron')}</span></span></summary><div class="q-detail">${answer}</div></details>`
+  return `<details id="${esc(qid)}" class="q-card" data-qkey="${esc(key)}" ${isOpen?'open':''}><summary><span class="q-num">Q${esc(q.no)}</span><span><span class="q-en" lang="en">${esc(q.en)}</span><span class="q-zh">${esc(q.zh)}</span>${questionChoices(q.choices)}${headingCue}${clue}</span><span class="reveal-cue"><span class="show">看答案</span><span class="hide">收起</span><span class="chev">${icon('chevron')}</span></span></summary><div class="q-detail">${answer}</div></details>`
 }
 function questionView(a,n){
   if (a.sourceKind === 'background' && !n.groups.length) {
@@ -141,12 +158,13 @@ function questionView(a,n){
   const nav=groups.map(g=>`<button data-scroll="${g.anchor}" class="q-shortcut ${['heading','contain'].includes(g.type)?'focus-type':''}">${esc(shortNames[g.subtype]||shortNames[g.type]||'题目')} <small>Q${esc(g.range)}</small></button>`).join('');
   const head=`<div class="q-head"><div class="mini-heading"><h2>题型速记</h2><button class="toolbtn" id="q-all">${icon('cards')}<span>展开全部答案</span></button></div><div class="q-jumps">${nav}</div>${n.inferredAnswers?'<p class="group-hint">本篇答案依据题干与原文推定。</p>':''}</div>`;
   const panels=groups.map(g=>{
-    const bank=g.wordbank?.length?`<details class="head-library"><summary>${icon('list')} 查看备选词 <span class="chev">${icon('chevron')}</span></summary><div class="wordbank">${g.wordbank.map(([k,en,zh])=>`<span><b>${esc(k)}</b> ${esc(en)}${zh?' · '+esc(zh):''}</span>`).join('')}</div></details>`:'';
+    const bankLabel = g.wordbankLabel || (g.type === 'match' ? '查看匹配选项' : '查看备选词');
+    const bank=g.wordbank?.length?`<details class="head-library"><summary>${icon('list')} ${esc(bankLabel)} <span class="chev">${icon('chevron')}</span></summary><div class="wordbank">${g.wordbank.map(([k,en,zh])=>`<span><b>${esc(k)}</b> ${esc(en)}${zh?' · '+esc(zh):''}</span>`).join('')}</div></details>`:'';
     const bankId=g.anchor==='g-heading'?'heading-options':'heading-options-'+g.anchor;
     const opts=g.type==='heading'&&g.options?.length?`<div id="${esc(bankId)}">${headingBank(g.options,a,n,bankId)}</div>`:'';
     const instruction=g.instructionsZh||g.hint||(g.instructions&&/[\u4e00-\u9fff]/u.test(g.instructions)?g.instructions:'')||groupHints[g.subtype]||groupHints[g.type]||'';
     const flow = g.type === 'heading' ? headingFlow(a.id, g, n) : '';
-    return `<section id="${esc(g.anchor)}" class="q-section"><h3>${esc(title(g))}<span class="range">Q${esc(g.range)}</span></h3><p class="group-hint">${esc(instruction)}</p>${opts}${bank}${g.items.map(q=>questionCard(a,n,g,q)).join('')}${flow}</section>`;
+    return `<section id="${esc(g.anchor)}" class="q-section"><h3>${esc(title(g))}<span class="range">Q${esc(g.range)}</span></h3><p class="group-hint">${esc(instruction)}</p>${summaryContext(g)}${opts}${bank}${g.items.map(q=>questionCard(a,n,g,q)).join('')}${flow}</section>`;
   }).join('');
   return {main:head+panels,side:asideLinks(groups.map(g=>[g.anchor,title(g)+' · Q'+g.range]),'点题干查看答案，再点定位句回到原文。')};
 }
@@ -168,12 +186,14 @@ function languageView(a,n){
   const jumps = `<nav class="language-jumps" aria-label="语言考点导航">${sections.map(([id, title]) => jumpLink(id, title)).join('')}</nav>`;
   return {main:jumps+vocabulary+pairs+points+clauses,side:asideLinks(sections,null)}
 }
-function studyPage(a,n,tab,params,marked){
-  const v=params.get('v'), chosen=a.variants?.some(x=>x[0]===v)?v:a.id;
+function studyPage(article,n,tab,params,marked){
+  const version = article.variants?.find(([id]) => id === params.get('v'));
+  const chosen = version?.[0] || article.id;
+  const a = version?.[2] ? {...article, ...version[2]} : article;
   const readingLabel = a.sourceKind === 'background' ? '背景资料（非原题）' : '纯阅读';
   const studyGroups = a.studyGroupCount ? `<span class="meta-inline">${esc(a.studyGroupCount)} 个速记主题</span>` : '';
   const meta=`<div class="meta">${partStamp(a.part)}${n.paragraphs.length?`<span class="meta-inline">${n.paragraphs.length} 段</span>`:''}${studyGroups}${n.groups.length?'':`<span class="meta-inline">${readingLabel}</span>`}</div>`;
-  const variants=a.variants?`<div class="variants"><span>题型版本</span>${a.variants.map(([id,name])=>`<a class="${chosen===id?'active':''}" href="${esc(url(a.id,tab,{v:id===a.id?null:id}))}">${esc(name)}</a>`).join('')}</div>`:'';
+  const variants=a.variants?`<div class="variants"><span>${esc(a.versionLabel || '题型版本')}</span>${a.variants.map(([id,name])=>`<a class="${chosen===id?'active':''}"${chosen===id?' aria-current="true"':''} href="${esc(url(a.id,tab,{v:id===a.id?null:id}))}">${esc(name)}</a>`).join('')}</div>`:'';
   const tabs=`<nav class="study-tabs" aria-label="速记分区">${Object.entries(zhTitles).map(([key,label])=>`<a href="${esc(url(a.id,key))}" class="${tab===key?'active':''}" ${tab===key?'aria-current="page"':''}>${icon({article:'book',questions:'cards',language:'pen'}[key])}${label}</a>`).join('')}</nav>`;
   const view=tab==='questions'?questionView(a,n):tab==='language'?languageView(a,n):renderArticle(a,n,params);
   const subtitle=n.subtitle?`<p class="passage-subtitle" id="subtitle"><i lang="en">${esc(n.subtitle[0])}</i>　${esc(n.subtitle[1])}</p>`:'';

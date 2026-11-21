@@ -199,6 +199,15 @@ summary .chev{margin-left:auto;color:var(--muted);display:inline-flex}details[op
 .vocab-term span { color: var(--muted); font: italic .9rem/1.5 var(--serif); }
 .vocabulary li p { margin: .15rem 0 0; line-height: 1.55; }
 .vocabulary li .ref-link { margin-top: .1rem; }
+.q-choices { display: grid; gap: .55rem; padding-top: .7rem; }
+.q-choice { display: grid; grid-template-columns: 1.15rem minmax(0, 1fr); gap: .35rem; line-height: 1.5; }
+.q-choice b { font: 600 .88rem/1.65 var(--mono); color: var(--forest); }
+.q-choice .q-zh { margin-top: 0; }
+.question-context { background: var(--white); border: 1px solid var(--line); border-inline-start: 3px solid var(--forest); border-radius: 8px; padding: .9rem 1rem; margin: .75rem 0; overflow-wrap: anywhere; }
+.question-context h4 { margin: 0 0 .5rem; font-size: 1.02rem; }
+.question-context h4 small { display: block; color: var(--muted); font-size: .9rem; font-weight: 400; }
+.question-context p { margin: .45rem 0; line-height: 1.65; }
+.question-context .source-block { border-top: 1px solid var(--line); margin-top: .65rem; }
 @media (max-width: 720px) {
   .language-jumps { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .8rem; }
   .vocabulary ul { grid-template-columns: minmax(0, 1fr); }
