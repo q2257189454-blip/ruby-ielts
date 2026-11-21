@@ -1,5 +1,5 @@
 import {icon,esc,url,partStamp,safeGet,safeSet,announce} from './ui.js';
-import {studyPage,afterStudy,studyAction} from './study.js?v=94b06f1daa';
+import {studyPage,afterStudy,studyAction} from './study.js?v=675ca0c02c';
 const main=document.querySelector('#main');
 const countEl=document.querySelector('#mark-count');
 const gridFilters={index:{part:'all',scope:'all',type:'all',q:'',page:0},bookmarks:{part:'all',scope:'all',type:'all',q:'',page:0}};
@@ -131,9 +131,15 @@ async function route(){
   try{note=await getJson('notes/'+variantId+'.json')}catch{if(token===fetchToken)noContent('这篇速记暂时未能载入');return}
   if(token!==fetchToken)return;
   currentRead={id:a.id};
-  if (r.tab === 'article' && !r.params.has('rev') && note.previousRefs) {
-    const oldRef = r.params.get('at');
-    if (Object.hasOwn(note.previousRefs, oldRef)) {
+  if (r.tab === 'article' && note.previousRefs && Object.hasOwn(note.previousRefs, previousAddress)) {
+    const oldRef = previousAddress;
+    const [paragraph, sentence] = oldRef.split('.');
+    const stillExists = note.paragraphs.find(p => p.id === paragraph)?.sentences[Number(sentence) - 1];
+    if (!stillExists) {
+      r.params.set('at', note.previousRefs[oldRef]);
+      r.params.set('rev', '2');
+      history.replaceState(history.state, '', url(a.id, r.tab, Object.fromEntries(r.params)));
+    } else if (!r.params.has('rev')) {
       const returnTo = r.params.get('back') || '';
       const question = returnTo.startsWith('q-')
         ? note.groups.flatMap(group => group.items).find(item => String(item.no) === returnTo.slice(2))

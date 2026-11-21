@@ -208,7 +208,33 @@ summary .chev{margin-left:auto;color:var(--muted);display:inline-flex}details[op
 .question-context h4 small { display: block; color: var(--muted); font-size: .9rem; font-weight: 400; }
 .question-context p { margin: .45rem 0; line-height: 1.65; }
 .question-context .source-block { border-top: 1px solid var(--line); margin-top: .65rem; }
+.with-directory { grid-template-areas: "reader directory"; }
+.with-directory > .reader-col { grid-area: reader; }
+.article-directory { grid-area: directory; max-height: calc(100vh - 92px); max-height: calc(100dvh - 92px); overflow-y: auto; }
+.paragraph-gist, .directory-gist { min-width: 0; }
+.paragraph-gist { margin: .65rem 0 .15rem; padding: 0 .8rem; border-inline-start: 3px solid #aabd96; background: #f3f6ed; border-radius: 0 5px 5px 0; }
+.paragraph-gist summary, .article-directory summary { list-style: none; cursor: pointer; }
+.paragraph-gist summary::-webkit-details-marker, .article-directory summary::-webkit-details-marker { display: none; }
+.paragraph-gist summary, .directory-gist summary, .directory-panel > summary h2 { display: flex; align-items: center; gap: .45rem; color: var(--forest); }
+.paragraph-gist summary { min-height: 42px; font-size: .92rem; font-weight: 650; }
+.paragraph-gist summary svg, .directory-gist summary svg, .directory-panel h2 svg:last-child { margin-inline-start: auto; flex: none; width: .95rem; }
+.paragraph-gist[open] > summary svg, .directory-gist[open] > summary svg, .directory-panel[open] > summary h2 svg:last-child { transform: rotate(180deg); }
+.paragraph-gist p { padding: 0 0 .65rem; line-height: 1.75; overflow-wrap: anywhere; }
+.directory-panel > summary h2 { margin: 0; font-size: 1rem; }
+.directory-row { display: grid; grid-template-columns: minmax(0, 1fr) 2rem; align-items: start; column-gap: .2rem; border-block-start: 1px solid #d9dfd1; }
+.directory-gist { grid-row: 1; grid-column: 1 / -1; }
+.directory-gist summary { min-height: 40px; margin-inline-end: 2.2rem; padding: .35rem .2rem; font-size: .9rem; overflow-wrap: anywhere; }
+.directory-gist p { padding: 0 .2rem .6rem; font-size: .9rem; line-height: 1.65; overflow-wrap: anywhere; }
+.article-directory nav .directory-jump { grid-row: 1; grid-column: 2; display: grid; place-items: center; height: 40px; width: 100%; padding: 0; border: 0; color: #45654d; border-radius: 4px; }
+.directory-jump:hover, .directory-gist summary:hover { background: #e0e9d5; }
+.article-directory summary:focus-visible, .paragraph-gist summary:focus-visible { outline: 2px solid var(--forest); outline-offset: 2px; }
 @media (max-width: 720px) {
+  .with-directory > .article-directory { display: block; position: static; max-height: none; overflow: visible; margin-bottom: 12px; padding: .25rem .85rem; }
+  .directory-panel > summary h2 { min-height: 44px; }
+  .directory-panel[open] { padding-bottom: .6rem; }
+  .directory-row { grid-template-columns: minmax(0, 1fr) 44px; }
+  .directory-gist summary { margin-inline-end: calc(44px + .2rem); }
+  .directory-gist summary, .article-directory nav .directory-jump { min-height: 44px; }
   .language-jumps { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .8rem; }
   .vocabulary ul { grid-template-columns: minmax(0, 1fr); }
   .passage-tools { width: 100%; gap: .45rem .6rem; }
