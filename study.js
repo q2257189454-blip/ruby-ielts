@@ -7,12 +7,22 @@ const zhTitles={article:'文章内容',questions:'题目速记',language:'语言
 let textMode=safeGet('ruby.ielts.recall.language-mode.v1','parallel');
 if(!modes.some(m=>m[0]===textMode))textMode='parallel';
 let questionOpen=new Map();
+const openHeadings = new Map();
 function addr(ref,note){if(!ref)return '';const [p,s]=ref.split('.');return note.paragraphs.find(x=>x.id===p)?.sentences[Number(s)-1]?.[0]||''}
 function loc(id,ref,returnTo,from='questions'){if(!ref)return '';return `<a class="ref-link" href="${esc(url(id,'article',{at:ref,rev:2,back:returnTo,from}))}">${icon('pin')}${esc(labelRef(ref))}</a>`}
 function jumpLink(target,txt){return `<button type="button" class="q-shortcut" data-scroll="${esc(target)}">${esc(txt)}</button>`}
 function toolsMode(){return `<div class="mode" role="group" aria-label="原文显示方式">${modes.map(([key,name])=>`<button type="button" data-mode="${key}" class="${textMode===key?'active':''}" aria-pressed="${textMode===key}">${name}</button>`).join('')}</div>`}
 function asideLinks(rows,detail){return `<aside class="aside"><div class="aside-head"><h2>本页目录</h2>${icon('list')}</div><nav aria-label="本页目录">${rows.map(([id,t])=>`<button data-scroll="${esc(id)}">${esc(t)}</button>`).join('')}</nav>${detail?`<small>${esc(detail)}</small>`:''}</aside>`}
-function beforeText(params,id){const back=params.get('back');if(!back)return '';const from=params.get('from')==='language'?'language':'questions';const label=from==='language'?'回到语言考点':back.startsWith('heading-options')?'回到标题列表':'回到 Q'+back.replace(/^q-/,'');return `<a class="jumpback" href="${esc(url(id,from,{at:back}))}">${icon('rotate')}${esc(label)}</a>`}
+function beforeText(params, id) {
+  const back = params.get('back');
+  if (!back) return '';
+  const from = params.get('from') === 'language' ? 'language' : 'questions';
+  let label = '回到 Q' + back.replace(/^q-/, '');
+  if (from === 'language') label = back.startsWith('vocab-') ? '回到这个词条' : '回到语言考点';
+  else if (back.startsWith('heading-options')) label = '回到标题列表';
+  else if (back.startsWith('heading-flow')) label = '回到行文流程';
+  return `<a class="jumpback" href="${esc(url(id, from, {at: back}))}">${icon('rotate')}${esc(label)}</a>`;
+}
 
 function bilingualLine([english, chinese], ref, selected, returnLink = '', heading = false) {
   const tag = heading ? 'h3' : 'span';
@@ -27,7 +37,23 @@ function supplementaryBlock(title, lines, prefix, selected) {
   return `<section class="passage-lead"><h3>${esc(title)}</h3>${content}</section>`;
 }
 
-function renderPassageParagraph(paragraph, selected, returnLink) {
+function paragraphHeadingOptions(groups) {
+  const matches = new Map();
+  for (const group of groups) {
+    if (group.type !== 'heading') continue;
+    for (const option of group.options || []) {
+      if (option[3]) matches.set(option[3], option);
+    }
+  }
+  return matches;
+}
+
+function paragraphHeadingControl(id, visible) {
+  const verb = visible ? '隐藏' : '显示';
+  return `<button type="button" class="heading-toggle" data-heading-toggle="${esc(id)}" aria-expanded="${visible}" aria-controls="matched-heading-${esc(id)}" aria-label="${verb}${esc(labelRef(id))}的匹配标题">${verb}标题</button>`;
+}
+
+function renderPassageParagraph(paragraph, selected, returnLink, match, visible = false) {
   const {id, role, sectionTitle, sentences, dialogueTurns, pdfPages} = paragraph;
   const heading = sectionTitle ? bilingualLine(sectionTitle, 'section.' + id, selected, returnLink, true) : '';
   const pageLabel = pdfPages?.length ? `<small class="pdf-page">原 PDF 第 ${esc(pdfPages.join('–'))} 页</small>` : '';
@@ -40,7 +66,12 @@ function renderPassageParagraph(paragraph, selected, returnLink) {
     });
     body = lines.slice(0, dialogueTurns[0] - 1).join(' ') + `<blockquote class="passage-dialogue">${turns.join('')}</blockquote>`;
   }
-  return `<section class="passage-section" id="p-${esc(id)}">${heading}<h3 class="para-title"><span class="para-id">${esc(id)}</span>${esc(role)}${pageLabel}</h3><div>${body}</div></section>`;
+  const toggle = match ? paragraphHeadingControl(id, visible) : '';
+  const matchedTitle = match ? `<div id="matched-heading-${esc(id)}" class="matched-heading"${visible ? '' : ' hidden'}>
+    <span class="heading-number">${esc(match[0])}</span>
+    <span><strong lang="en">${esc(match[1])}</strong><span class="heading-translation">${esc(match[2])}</span></span>
+  </div>` : '';
+  return `<section class="passage-section" id="p-${esc(id)}">${heading}<div class="paragraph-bar"><h3 class="para-title"><span class="para-id">${esc(id)}</span>${esc(role)}${pageLabel}</h3>${toggle}</div>${matchedTitle}<div>${body}</div></section>`;
 }
 
 function renderLogicStep([span, action], index, grouped) {
@@ -58,12 +89,31 @@ function renderArticle(a,n,params){
   const returnLink = beforeText(params, a.id);
   const overview=`<section class="study-card overview" id="abstract"><h2>文章大意</h2><p>${esc(n.summary)}</p></section>`;
   const grouped = Boolean(a.studyGroupCount);
+  const matches = paragraphHeadingOptions(n.groups);
+  const headingKey = a.variants?.some(([id]) => id === params.get('v')) ? params.get('v') : a.id;
+  const visibleHeadings = openHeadings.get(headingKey);
+  const allVisible = matches.size > 0 && [...matches.keys()].every(id => visibleHeadings?.has(id));
+  const headingControl = matches.size ? `<button type="button" id="heading-all" class="toolbtn" aria-expanded="${allVisible}" aria-controls="${[...matches.keys()].map(id => 'matched-heading-' + esc(id)).join(' ')}">${allVisible ? '隐藏' : '显示'}全部段落标题</button>` : '';
   const outline = n.logic.map((step, index) => renderLogicStep(step, index, grouped)).join('');
   const flow=`<section class="study-card" id="logic"><h2>行文逻辑</h2><div class="logic-links${grouped ? ' study-outline' : ''}">${outline}</div><details class="para-briefs"><summary>逐段大意 <span class="chev">${icon('chevron')}</span></summary>${paragraphs.map(p=>`<div class="brief-row"><button data-scroll="p-${esc(p.id)}">${esc(labelRef(p.id))}${p.role?' · '+esc(p.role):''}</button><span>${esc(p.brief)}</span></div>`).join('')}</details></section>`;
-  const text=`<section class="study-card para-card" id="passage"><div class="switch-line"><h2 class="source-heading">文章主体</h2>${toolsMode()}</div><div id="passage-body" class="${textMode==='original'?'original-only':textMode==='recall'?'hidden-zh':''}">${lead}${paragraphs.map(p => renderPassageParagraph(p, selected, returnLink)).join('')}${notes}</div></section>`;
+  const text=`<section class="study-card para-card" id="passage" data-heading-note="${esc(headingKey)}"><div class="switch-line"><h2 class="source-heading">文章主体</h2><div class="passage-tools">${toolsMode()}${headingControl}</div></div><div id="passage-body" class="${textMode==='original'?'original-only':textMode==='recall'?'hidden-zh':''}">${lead}${paragraphs.map(p => renderPassageParagraph(p, selected, returnLink, matches.get(p.id), visibleHeadings?.has(p.id))).join('')}${notes}</div></section>`;
   return {main:overview+flow+text,side:asideLinks([['abstract','文章大意'],['logic','行文逻辑'],['passage','原文与逐句翻译'],...paragraphs.map(p=>['p-'+p.id,p.role?labelRef(p.id)+' · '+p.role:labelRef(p.id)])],`${paragraphs.length} 段 · ${paragraphs.reduce((sum,p)=>sum+p.sentences.length,0)} 句`)}
 }
 function headingBank(opts,a,n,bankId){return `<details class="head-library"><summary>${icon('list')} 全部 ${opts.length} 个标题与中文 <span class="chev">${icon('chevron')}</span></summary><div class="head-opts">${opts.map(([num,en,zh,par,ref,why])=>`<div class="opt"><span class="opt-en" lang="en"><b>${esc(num)}</b>${esc(en)}</span><p>${esc(zh)}</p><details><summary>查看匹配或排除理由</summary><p><strong>${par?esc(par)+' 段':'干扰项'}</strong> · ${esc(why)}</p>${ref?`<blockquote class="evidence" lang="en">${esc(addr(ref,n))}</blockquote>${loc(a.id,ref,bankId)}`:''}</details></div>`).join('')}</div></details>`}
+function headingFlow(articleId, group, note) {
+  const stages = group.flow || note.logic.map(([, title]) => [[], title, '']);
+  if (!stages.length) return '';
+  const id = 'heading-flow-' + group.anchor;
+  const steps = stages.map(([paragraphs, title, explanation], index) => {
+    const stepId = id + '-' + (index + 1);
+    const first = paragraphs[0];
+    const span = paragraphs.length > 1 ? first + '–' + paragraphs[paragraphs.length - 1] : first;
+    const link = first ? `<a class="flow-ref" href="${esc(url(articleId, 'article', {at: first + '.1', rev: 2, back: stepId, from: 'questions'}))}">${esc(labelRef(span))}</a>` : '';
+    return `<li id="${esc(stepId)}"><div class="flow-title">${link}<strong>${esc(title)}</strong></div>${explanation ? `<p>${esc(explanation)}</p>` : ''}</li>`;
+  }).join('');
+  return `<section class="heading-flow" id="${esc(id)}" aria-labelledby="${esc(id)}-title"><h4 id="${esc(id)}-title">全文行文流程</h4><ol>${steps}</ol></section>`;
+}
+
 function questionCard(a,n,g,q){
   const qid='q-'+q.no;const key=a.id+':'+(new URLSearchParams(location.hash.split('?')[1]).get('v')||'')+':'+qid;const isOpen=questionOpen.get(key)===true;
   const headingCue=q.cue?`<span class="heading-cue">${esc(q.cue)}</span>`:'';
@@ -75,7 +125,9 @@ function questionCard(a,n,g,q){
     const initial=g.type==='contain'?'所在段落':g.type==='heading'?'正确标题':'答案';
     const refs=[...new Set([q.ref,...(q.refs||[])].filter(Boolean))];
     const contextOnly=q.contextOnly||q.answer==='NOT GIVEN';
-    answer=`<div class="q-answer"><span class="answer-label">${initial}</span><strong>${esc(value)}</strong></div>${q.solution?`<p class="answer-zh">${esc(q.solution)}</p>`:''}${q.why?`<p class="reason">${esc(q.why)}</p>`:''}${g.type!=='ending'&&q.ref?`${contextOnly?'<span class="evidence-label">相关原文</span>':''}<blockquote class="evidence" lang="en">${esc(addr(q.ref,n))}</blockquote>`:''}${refs.map(r=>loc(a.id,r,qid)).join('')}`;
+    const glossLabel = g.type === 'fill' ? '<span class="answer-label">答案中文</span> ' : '';
+    const solution = q.solution ? `<p class="answer-zh">${glossLabel}${esc(q.solution)}</p>` : '';
+    answer=`<div class="q-answer"><span class="answer-label">${initial}</span><strong>${esc(value)}</strong></div>${solution}${q.why?`<p class="reason">${esc(q.why)}</p>`:''}${g.type!=='ending'&&q.ref?`${contextOnly?'<span class="evidence-label">相关原文</span>':''}<blockquote class="evidence" lang="en">${esc(addr(q.ref,n))}</blockquote>`:''}${refs.map(r=>loc(a.id,r,qid)).join('')}`;
   }
   return `<details id="${esc(qid)}" class="q-card" data-qkey="${esc(key)}" ${isOpen?'open':''}><summary><span class="q-num">Q${esc(q.no)}</span><span><span class="q-en" lang="en">${esc(q.en)}</span><span class="q-zh">${esc(q.zh)}</span>${headingCue}${clue}</span><span class="reveal-cue"><span class="show">看答案</span><span class="hide">收起</span><span class="chev">${icon('chevron')}</span></span></summary><div class="q-detail">${answer}</div></details>`
 }
@@ -93,15 +145,28 @@ function questionView(a,n){
     const bankId=g.anchor==='g-heading'?'heading-options':'heading-options-'+g.anchor;
     const opts=g.type==='heading'&&g.options?.length?`<div id="${esc(bankId)}">${headingBank(g.options,a,n,bankId)}</div>`:'';
     const instruction=g.instructionsZh||g.hint||(g.instructions&&/[\u4e00-\u9fff]/u.test(g.instructions)?g.instructions:'')||groupHints[g.subtype]||groupHints[g.type]||'';
-    return `<section id="${esc(g.anchor)}" class="q-section"><h3>${esc(title(g))}<span class="range">Q${esc(g.range)}</span></h3><p class="group-hint">${esc(instruction)}</p>${opts}${bank}${g.items.map(q=>questionCard(a,n,g,q)).join('')}</section>`;
+    const flow = g.type === 'heading' ? headingFlow(a.id, g, n) : '';
+    return `<section id="${esc(g.anchor)}" class="q-section"><h3>${esc(title(g))}<span class="range">Q${esc(g.range)}</span></h3><p class="group-hint">${esc(instruction)}</p>${opts}${bank}${g.items.map(q=>questionCard(a,n,g,q)).join('')}${flow}</section>`;
   }).join('');
   return {main:head+panels,side:asideLinks(groups.map(g=>[g.anchor,title(g)+' · Q'+g.range]),'点题干查看答案，再点定位句回到原文。')};
 }
+function vocabularyCard(articleId, words) {
+  if (!words?.length) return '';
+  const entries = words.map(([term, part, meaning, ref], index) => {
+    const id = 'vocab-' + (index + 1);
+    return `<li id="${id}"><div class="vocab-term"><strong lang="en">${esc(term)}</strong><span lang="en">${esc(part)}</span></div><p>${esc(meaning)}</p>${loc(articleId, ref, id, 'language')}</li>`;
+  }).join('');
+  return `<section class="study-card vocabulary" id="vocabulary" aria-labelledby="vocabulary-title"><h2 id="vocabulary-title">本篇核心词汇 <small>${words.length} 个</small></h2><ul>${entries}</ul></section>`;
+}
+
 function languageView(a,n){
+  const vocabulary = vocabularyCard(a.id, n.vocabulary);
   const pairs=`<section class="study-card" id="pairs"><h2>同义替换</h2><p class="section-hint">${n.groups.length?'按题号对照题干与原文，按段落复习词义。':'对照原文表达和释义。'}</p>${n.pairs.map(([qs,from,to,zh,ref,kind])=>`<div class="pair"><small>${esc(qs)}${kind?' · '+esc(kind):''}</small><div class="pair-main"><span lang="en">${esc(from)}</span><span class="swap">${kind==='原文释义'?'意为':'对应'}</span><mark lang="en">${esc(to)}</mark></div><p>${esc(zh)}</p>${loc(a.id,ref,'pairs','language')}</div>`).join('')}</section>`;
   const points=`<section class="study-card" id="points"><h2>高频考点解析</h2>${n.points.map(([title,num,body,ref])=>`<div class="point"><small>${esc(num)}</small><h3>${esc(title)}</h3><p>${esc(body)}</p>${loc(a.id,ref,'points','language')}</div>`).join('')}</section>`;
   const clauses=`<section class="study-card" id="clauses"><h2>从句拆解</h2>${n.clauses.map(([ref,title,main,scope,step])=>{const [p,s]=ref.split('.');const zh=n.paragraphs.find(x=>x.id===p).sentences[Number(s)-1][1];return `<div class="clause"><h3>${esc(title)}</h3><blockquote lang="en">${esc(addr(ref,n))}</blockquote><p><span class="term">主干　</span><span lang="en">${esc(main)}</span></p><p><span class="term">从句　</span>${esc(scope)}</p><p><span class="term">顺读　</span>${esc(step)}</p><details class="source-block"><summary>整句译文 ${icon('chevron')}</summary><p>${esc(zh)}</p></details>${loc(a.id,ref,'clauses','language')}</div>`}).join('')}</section>`;
-  return {main:pairs+points+clauses,side:asideLinks([['pairs','题干与原文的同义替换'],['points','本篇高频考点'],['clauses','长难句与从句']],null)}
+  const sections = [...(vocabulary ? [['vocabulary','核心词汇']] : []), ['pairs','同义替换'], ['points','高频考点'], ['clauses','从句拆解']];
+  const jumps = `<nav class="language-jumps" aria-label="语言考点导航">${sections.map(([id, title]) => jumpLink(id, title)).join('')}</nav>`;
+  return {main:jumps+vocabulary+pairs+points+clauses,side:asideLinks(sections,null)}
 }
 function studyPage(a,n,tab,params,marked){
   const v=params.get('v'), chosen=a.variants?.some(x=>x[0]===v)?v:a.id;
@@ -127,7 +192,31 @@ function afterStudy(params,tab){
     else {const el=document.getElementById(target);if(el?.matches('.q-card'))el.open=true;scrollElement(target,true)}
   });
 }
+function toggleParagraphHeadings(control) {
+  const passage = control.closest('[data-heading-note]');
+  const buttons = [...passage.querySelectorAll('[data-heading-toggle]')];
+  const all = passage.querySelector('#heading-all');
+  const key = passage.dataset.headingNote;
+  const selection = openHeadings.get(key) || new Set();
+  const show = control.getAttribute('aria-expanded') !== 'true';
+  const nextAction = show ? '隐藏' : '显示';
+  for (const button of control === all ? buttons : [control]) {
+    const id = button.dataset.headingToggle;
+    if (show) selection.add(id); else selection.delete(id);
+    document.getElementById(button.getAttribute('aria-controls')).hidden = !show;
+    button.setAttribute('aria-expanded', String(show));
+    button.setAttribute('aria-label', nextAction + labelRef(id) + '的匹配标题');
+    button.textContent = nextAction + '标题';
+  }
+  openHeadings.set(key, selection);
+  const allVisible = buttons.every(button => selection.has(button.dataset.headingToggle));
+  all.setAttribute('aria-expanded', String(allVisible));
+  all.textContent = (allVisible ? '隐藏' : '显示') + '全部段落标题';
+}
+
 function studyAction(el){
+  const headingControl = el.closest('#heading-all, [data-heading-toggle]');
+  if (headingControl) { toggleParagraphHeadings(headingControl); return; }
   const mode=el.closest('[data-mode]')?.dataset.mode;
   if(mode&&modes.some(m=>m[0]===mode)){
     textMode=mode;safeSet('ruby.ielts.recall.language-mode.v1',mode);

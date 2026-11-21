@@ -1,5 +1,5 @@
 import {icon,esc,url,partStamp,safeGet,safeSet,announce} from './ui.js';
-import {studyPage,afterStudy,studyAction} from './study.js?v=cb5495bc7b';
+import {studyPage,afterStudy,studyAction} from './study.js?v=5e5a5475a9';
 const main=document.querySelector('#main');
 const countEl=document.querySelector('#mark-count');
 const gridFilters={index:{part:'all',scope:'all',type:'all',q:'',page:0},bookmarks:{part:'all',scope:'all',type:'all',q:'',page:0}};
