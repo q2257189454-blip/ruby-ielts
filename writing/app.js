@@ -19,7 +19,7 @@ function render(){
   let [k,b]=id.split('@');let item=get(k);if(!item||!item.id.startsWith('e'))item=db.essays[0];body=logic(item,b);active='logic';title='补一条逻辑链';
  }else if(view==='mine'){body=mine();active='mine';title='我的练习';}
  else if(view==='language'){body=language();active='language';title=state.handLane==='topics'?'大作文话题词组':'小作文'+(state.handLane==='patterns'?'句式':'同义替换');}
- else{body=catalog(view!=='bank');}
+ else{body=catalog(view!=='bank');if(state.collection==='november')title='11 月大作文题单';}
  mount.innerHTML=header(active)+'<main id="main" tabindex="-1">'+body+'</main>'+footer();titleText(title);
 }
 function go(){
@@ -28,7 +28,8 @@ function go(){
  if(view==='task'&&get(id)){
   state.detailId=id;touch(get(id));state.tab=mode==='write'?'write':'read';state.selected='';state.translated={};state.phraseOpen={};state.phraseMore=false;state.highlight=null;state.logicBody=0;state.readZh=false;state.showReview=false;state.openHint=false;
  }else{state.detailId='';}
- if(view==='bank'&&(id==='1'||id==='2'))setBank(Number(id));
+ if(view==='bank'&&(id==='1'||id==='2'))setBank(Number(id),mode);
+ else if(!view&&state.collection)setBank(2);
  if(view==='language')configureHandbook(route().slice(1));
  state.logicRevealed=false;
  render();window.scrollTo(0,0);
@@ -39,9 +40,14 @@ document.addEventListener('click',event=>{
  const el=event.target.closest('[data-act]');if(!el||el.disabled)return;const act=el.dataset.act;
  if(act==='close'){modal.close();return;}if(act==='info'){info();return;}
  if(act==='star'){mark(el.dataset.id);render();return;}
- if(act==='bankTab'){setBank(Number(el.dataset.n));if(route()[0]==='bank'&&route()[1]!==el.dataset.n){navigate('#/bank/'+el.dataset.n);}else render();return;}
+ if(act==='bankTab'){
+  const [,task,collection]=route(),n=Number(el.dataset.n);
+  if(route()[0]==='bank'&&(task!==el.dataset.n||collection))navigate('#/bank/'+n);
+  else{setBank(n);render();}
+  return;
+ }
  if(act==='type'){state.type=el.dataset.value;state.page=1;render();return;}
- if(act==='resetFilter'){setBank(state.bank);render();return;}
+ if(act==='resetFilter'){setBank(state.bank,state.collection);render();return;}
  if(act==='page'){state.page=Number(el.dataset.page);updateResults();document.querySelector('.catalog-controls')?.scrollIntoView({block:'start'});return;}
  if(act==='mineTab'){state.mine=el.dataset.value;render();return;}
  if(route()[0]==='task'&&articleAction(act,el,render))return;

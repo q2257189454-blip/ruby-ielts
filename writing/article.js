@@ -1,4 +1,4 @@
-import {e,icon,btn,a,db,state,saved,persist,get,bookButton,openModal,highlightBox,notify,positionLine} from './ui.js';
+import {e,icon,btn,a,db,state,saved,persist,get,bookButton,openModal,highlightBox,notify,positionLine,questionTitle} from './ui.js';
 import {model,isChart,fullText,sentenceText,allSlots,wordCount,chain,bilingual,bodyNames} from './model.js';
 import {handbookUrl} from './handbook.js';
 const current=()=>get(state.detailId);
@@ -14,7 +14,9 @@ function chartFigure(d,ev=null,large=false){
 }
 function question(d){
  const chart=isChart(d);
- return `<section class="prompt"><div class="box-label">${icon('book',16)} 英文题目 <span lang="en">QUESTION</span></div><p class="english prompt-text" lang="en">${e(d.prompt)}</p><details class="prompt-zh" ${state.readZh?'open':''}><summary>中文题意 ${icon('down',14)}</summary><p>${e(d.q||d.promptZh)}</p></details>${chart?chartFigure(d,d.evidence[state.highlight]||null):`<div class="prompt-asks"><span class="ask-label">审题</span><span>${e(d.ask[0])}</span><span>${e(d.ask[1])}</span></div>`}</section>`;
+ const original=d.november?.prompt;
+ const batchPrompt=original && original!==d.prompt ? `<details class="batch-prompt"><summary>11 月题单原题 ${icon('down',14)}</summary><p class="english" lang="en">${e(original)}</p></details>` : '';
+ return `<section class="prompt"><div class="box-label">${icon('book',16)} 英文题目 <span lang="en">QUESTION</span></div><p class="english prompt-text" lang="en">${e(d.prompt)}</p><details class="prompt-zh" ${state.readZh?'open':''}><summary>中文题意 ${icon('down',14)}</summary><p>${e(d.q||d.promptZh)}</p></details>${batchPrompt}${chart?chartFigure(d,d.evidence[state.highlight]||null):`<div class="prompt-asks"><span class="ask-label">审题</span><span>${e(d.ask[0])}</span><span>${e(d.ask[1])}</span></div>`}</section>`;
 }
 function readToolbar(d){
  return `<div class="work-tabs">${[['read','book','双色范文'],['fill','pen','挖空练习'],['write','timer','限时写作']].map(([k,im,t])=>btn(icon(im,17)+t,'articleTab',state.tab===k?'active':'',`data-value="${k}" aria-pressed="${state.tab===k}"`)).join('')}</div>
@@ -60,8 +62,8 @@ function bestEvidence(d,pi,si){
  return scored[0]?.n>=2?scored[0].i:null;
 }
 function evidence(d){return `<section class="panel"><div class="panel-heading">${icon('target',19)}<h3>定位图中信息</h3></div><div class="evidence-grid">${d.evidence.map((v,i)=>btn(`<strong>${e(v.feature)}</strong><small>${e(v.anchor)}</small>`,'evidence','evidence-btn'+(state.highlight===i?' active':''),`data-idx="${i}"`)).join('')}</div>${state.highlight!==null?`<p class="evidence-detail">${e(d.evidence[state.highlight].detail)}</p>`:''}</section>`;}
-const primaryTopics={'教育':'教育','犯罪':'犯罪与司法','交通':'交通','环境':'环境与能源','政府':'政府与公共政策','工作':'工作与就业','社会':'社会与平等','文化艺术与旅游':'文化与艺术','科技与媒体':'科技'};
-const moreTopics={'社交媒体':'社交媒体','广告与新闻':'广告与新闻','科技':'科技','网络隐私':'科技','文化艺术':'文化与艺术','旅游':'旅游','家庭':'家庭与成长','职场':'工作与就业','城市生活':'城市与住房','社区生活':'社会与平等','国际与全球化':'全球化','健康':'健康','食品与消费':'经济与消费','交通出行':'交通','公共政策':'政府与公共政策'};
+const primaryTopics={'教育':'教育','犯罪':'犯罪与司法','交通':'交通','环境':'环境与能源','政府':'政府与公共政策','工作':'工作与就业','社会':'社会与平等','文化艺术与旅游':'文化与艺术','科技与媒体':'科技','体育与休闲':'体育与休闲'};
+const moreTopics={'社交媒体':'社交媒体','广告与新闻':'广告与新闻','科技':'科技','网络隐私':'科技','文化艺术':'文化与艺术','旅游':'旅游','家庭':'家庭与成长','职场':'工作与就业','城市生活':'城市与住房','社区生活':'社会与平等','国际与全球化':'全球化','健康':'健康','食品与消费':'经济与消费','交通出行':'交通','公共政策':'政府与公共政策','体育与休闲':'体育与休闲','经济与消费':'经济与消费','语言学习':'教育','教育':'教育','工作':'工作与就业','环境':'环境与能源','犯罪':'犯罪与司法','课外活动':'教育','同伴影响':'家庭与成长','个人成长':'家庭与成长'};
 const specificTopics={e082:'体育与休闲',e193:'经济与消费',e214:'经济与消费',e098:'旅游',e134:'旅游',e207:'科技',e124:'社交媒体',e035:'广告与新闻',e038:'广告与新闻',e042:'社交媒体',e125:'社交媒体',e126:'科技',e159:'健康',e157:'家庭与成长',e137:'城市与住房',e190:'城市与住房',e102:'城市与住房',e111:'全球化'};
 function phraseIndex(text, phrase) {
  const needle=phrase.toLowerCase(), source=text.toLowerCase();
@@ -127,7 +129,8 @@ function rubric(d,text){
 export function article(d){
  if(!d)return '';
  const parts=partsFor(d),chart=isChart(d);
- return `<div class="shell secondary-page detail-page"><div class="crumb">${a('分类题库','#/bank/'+(chart?1:2))} ${icon('right',13)} ${chart?'小作文':'大作文'}</div><div class="article-title"><div><div class="section-kicker"><span></span> TASK ${chart?1:2} <i></i> ${e(d.type)} · ${e(d.topic)}</div><h1>${e(d.title)}</h1></div>${bookButton(d,true)}</div><div class="detail-position"><b>${chart?'写作重点':'范文立场'}</b>${positionLine(d)}</div>${question(d)}${readToolbar(d)}${state.tab==='write'?timed(d,parts):`<div class="study-grid">${studyBody(d,parts)}${paperSide(d,parts)}</div>`}</div>`;
+ const breadcrumb=d.november ? a('11 月题单','#/bank/2/november')+' '+icon('right',13)+' 第 '+d.november.number+' 题' : (chart?'小作文':'大作文');
+ return `<div class="shell secondary-page detail-page"><div class="crumb">${a('分类题库','#/bank/'+(chart?1:2))} ${icon('right',13)} ${breadcrumb}</div><div class="article-title"><div><div class="section-kicker"><span></span> TASK ${chart?1:2} <i></i> ${e(d.type)} · ${e(d.topic)}</div><h1>${questionTitle(d)}</h1></div>${bookButton(d,true)}</div><div class="detail-position"><b>${chart?'写作重点':'范文立场'}</b>${positionLine(d)}</div>${question(d)}${readToolbar(d)}${state.tab==='write'?timed(d,parts):`<div class="study-grid">${studyBody(d,parts)}${paperSide(d,parts)}</div>`}</div>`;
 }
 export function articleInput(el){
  const d=current();if(!d)return false;

@@ -1,4 +1,4 @@
-import {db,state,saved,get,e,icon,btn,a,notify,persist} from './ui.js';
+import {db,state,saved,get,e,icon,btn,a,notify,persist,questionTitle} from './ui.js';
 import {chain,bilingual,validBody,bodyNames} from './model.js';
 
 function step(item) {
@@ -16,7 +16,7 @@ export function logic(d, requested) {
  const blank = `<div class="logic-missing"><span class="step-tag">自己补一步 · ${e(gap[0])}</span><label for="logicAnswer">${e(hint)}</label><textarea id="logicAnswer" rows="3" placeholder="先写中文也可以…" data-key="${key}">${e(answer)}</textarea><div class="logic-action">${btn(show?'收起参考思路':'查看参考思路','revealLogic','btn forest')}<span>${done?'已练习':'自动保存'}</span></div>
  ${show?`<div class="reference-answer"><b>一种写法</b><p>${e(gap[1])}</p><p class="english" lang="en">${e(reference)}.</p></div>`:''}</div>`;
  return `<div class="shell secondary-page logic-page"><div class="section-kicker"><span></span> LOGIC PRACTICE</div><h1>补一条逻辑链</h1><p class="lede">从一个抽象观点往下追问，写出中间真正发生的事。</p><div class="logic-page-grid"><section class="logic-work"><div class="logic-chooser"><label class="chooser-label">练习题目<select id="logicSelect" data-body="${body}">${db.essays.map(x=>`<option value="${x.id}" ${d.id===x.id?'selected':''}>${e(x.title)}</option>`).join('')}</select></label>${btn(icon('shuffle',17)+'换一题','shuffleLogic','btn subtle')}</div>
- <div class="logic-block"><div class="logic-block-title"><div><span class="meta-tag">${e(d.type)} · ${e(d.topic)}</span><h2>${e(d.title)}</h2></div>${btn(icon('bookmark',18),'starLogic','icon-btn'+(saved.logicStars[key]?' on':''),`aria-label="收藏本条逻辑链" aria-pressed="${!!saved.logicStars[key]}"`)}</div>
+ <div class="logic-block"><div class="logic-block-title"><div><span class="meta-tag">${e(d.type)} · ${e(d.topic)}</span><h2>${questionTitle(d)}</h2></div>${btn(icon('bookmark',18),'starLogic','icon-btn'+(saved.logicStars[key]?' on':''),`aria-label="收藏本条逻辑链" aria-pressed="${!!saved.logicStars[key]}"`)}</div>
  <div class="mini-tabs">${labels.map((label,i)=>a(e(label),'#/logic/'+d.id+'@'+i,body===i?'active':'')).join('')}</div>
  <div class="logic-steps">${steps.map((item,i)=>i===gapIndex?blank:step(item)).join('')}</div></div></section>
  <aside><section class="panel"><div class="panel-heading">${icon('bulb',18)}<h3>检查这一步</h3></div><p>${e(check)}</p>${a('对照完整范文','#/task/'+d.id,'btn soft wide')}</section><section class="panel"><div class="panel-heading">${icon('book',18)}<h3>英文题干</h3></div><p class="english">${e(d.prompt)}</p></section></aside></div></div>`;
