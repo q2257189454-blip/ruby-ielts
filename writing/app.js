@@ -78,6 +78,12 @@ document.addEventListener('toggle',ev=>{
 },true);
 window.addEventListener('hashchange',go);setInterval(tick,500);
 try{
- const reply=await fetch('./data.json');if(!reply.ok)throw new Error('题库读取失败');Object.assign(db,await reply.json());go();
+ // Use the entry module's bank revision for the data request on static hosts.
+ const bankUrl=new URL('./data.json',import.meta.url);
+ bankUrl.search=new URL(import.meta.url).search;
+ const reply=await fetch(bankUrl,{cache:'no-cache'});
+ if(!reply.ok)throw new Error('题库读取失败');
+ Object.assign(db,await reply.json());
+ go();
 }catch(err){console.error(err);mount.innerHTML=header('bank')+'<main class="shell secondary-page"><h1>题库暂时没有打开</h1><p>请刷新页面重新加载。</p><button type="button" class="btn forest" id="retry">重新加载</button></main>';document.querySelector('#retry').onclick=()=>location.reload();}
 
