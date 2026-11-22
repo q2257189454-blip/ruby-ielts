@@ -59,6 +59,7 @@ export function language() {
   return `<div class="shell secondary-page hand-page">
     <div class="section-kicker"><span></span> WRITING HANDBOOK</div><h1>写作表达手册</h1>
     <div class="hand-intro"><p class="lede">${isEssay ? '按话题查词组，看看每个搭配怎样写进一句论证。' : '按写作场景查句式，按词性比较近义词的搭配和语气。'}</p>${taskSwitcher(isEssay)}</div>
+    ${isEssay?'<a class="cu-entry" href="#/corpus">查看大作文语料库与用法频次</a>':''}
     <div class="hand-tools">
       ${isEssay ? '<div class="hand-section-name">'+icon('word',19)+'<span>大作文话题词组</span></div>' : `<nav class="hand-modes" aria-label="小作文手册内容">${['patterns','synonyms'].map(k => navLink(lanes[k].heading, handbookUrl(k), lane === k)).join('')}</nav>`}
       <label class="hand-search">${icon('search',17)}<span>搜${meta.scope}</span><input id="langSearch" type="search" aria-label="搜索${meta.scope}" value="${e(state.handQuery)}" placeholder="${e(meta.placeholder)}"></label>

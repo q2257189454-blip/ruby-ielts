@@ -1,8 +1,24 @@
 import {e,icon,btn,a,db,state,saved,persist,get,bookButton,openModal,highlightBox,notify,positionLine,questionTitle} from './ui.js';
 import {model,isChart,fullText,sentenceText,allSlots,wordCount,chain,bilingual,bodyNames} from './model.js';
-import {handbookUrl} from './handbook.js';
+import {handbookUrl} from './handbook.js?rev=corpus1';
 const current=()=>get(state.detailId);
-const partsFor=d=>model(d,saved.edition);
+const readingEdition=()=>state.sourceEdition || saved.edition;
+const partsFor=d=>model(d,readingEdition());
+export function selectSourceSlot(d,key,edition) {
+ if(!key || isChart(d))return;
+ let chosen=edition==='full'||edition==='simple'?edition:readingEdition();
+ let target=allSlots(model(d,chosen)).find(slot=>slot.key===key);
+ if(!target && chosen==='simple'){
+  chosen='full';
+  target=allSlots(model(d,chosen)).find(slot=>slot.key===key);
+ }
+ if(!target)return;
+ state.sourceEdition=chosen;
+ state.selected=key;
+ state.translated[target.pi]=true;
+ state.logicBody=target.pi===3?2:target.pi===2?1:0;
+ return target.pi;
+}
 const setOf=(bag,id)=>saved[bag][id]??={};
 const slot=(d,parts)=>allSlots(parts).find(p=>p.key===state.selected);
 function answeredCount(d,parts){
@@ -20,7 +36,7 @@ function question(d){
 }
 function readToolbar(d){
  return `<div class="work-tabs">${[['read','book','双色范文'],['fill','pen','挖空练习'],['write','timer','限时写作']].map(([k,im,t])=>btn(icon(im,17)+t,'articleTab',state.tab===k?'active':'',`data-value="${k}" aria-pressed="${state.tab===k}"`)).join('')}</div>
- <div class="article-tools"><div class="edition-pick" aria-label="模板版本">${[['full','完整版'],['simple','简易版']].map(([k,t])=>btn(t,'edition',saved.edition===k?'active':'',`data-value="${k}" aria-pressed="${saved.edition===k}"`)).join('')}</div>
+ <div class="article-tools"><div class="edition-pick" aria-label="模板版本">${[['full','完整版'],['simple','简易版']].map(([k,t])=>btn(t,'edition',readingEdition()===k?'active':'',`data-value="${k}" aria-pressed="${readingEdition()===k}"`)).join('')}</div>
  ${state.tab!=='write'?`<div class="sample-legend"><span><i></i>固定模板</span><span><i></i>本题填充</span></div>`:''}
  <div class="edition-links">${state.tab!=='write'?btn('本题表达','toVocabulary','link-btn'):''}${btn('模板说明','templateGuide','link-btn muted')}</div></div>`;
 }
@@ -39,7 +55,7 @@ function slotInspector(d,parts){
  const earlier=w.key==='rAction'?saved.blanks[d.id]?.r4:'';
  const previous=earlier?.trim()?`<details class="previous-blank"><summary>查看以前在此处写的判断</summary><p class="english" lang="en">${e(earlier)}</p></details>`:'';
  return `<section class="inspector"><div class="box-label">${icon('pen',16)} 当前填空</div><h3>${e(w.label)}</h3><p>${e(w.tip)}</p>
- ${state.tab==='fill'?`<label class="input-label" for="slotAnswer">我的英文表达</label><textarea id="slotAnswer" class="small-input english" rows="3" placeholder="写下你自己的填法…" lang="en">${e(response)}</textarea><span class="autosave">自动保存在本机</span>${previous}${btn(state.openHint?'收起参考填法':'看提示与参考','showSlotHint','link-btn')}${state.openHint?`<p class="slot-cn">${e(w.zh)}</p><p class="ref-en english">${e(w.text)}</p>`:''}`:`<p class="ref-en english">${e(w.text)}</p><div class="slot-cn">${e(w.zh)}</div>`}</section>`;
+ ${state.tab==='fill'?`<label class="input-label" for="slotAnswer">我的英文表达</label><textarea id="slotAnswer" class="small-input english" rows="3" placeholder="写下你自己的填法…" lang="en">${e(response)}</textarea><span class="autosave">自动保存在本机</span>${previous}${btn(state.openHint?'收起参考填法':'看提示与参考','showSlotHint','link-btn')}${state.openHint?`<p class="slot-cn">${e(w.zh)}</p><p class="ref-en english">${e(w.text)}</p>`:''}`:`<p class="ref-en english">${e(w.text)}</p><div class="slot-cn">${e(w.zh)}</div>`}${isChart(d)?'':a('查看这个空还有哪些写法','#/corpus/slots?slot='+w.key+'&doc='+encodeURIComponent(d.id)+'&edition='+readingEdition(),'cu-entry')}</section>`;
 }
 function studyBody(d,parts){
  const fill=state.tab==='fill',w=slot(d,parts),currentPi=w?.pi;
@@ -148,6 +164,7 @@ export function articleAction(act,el,render){
  case 'articleTab':state.tab=el.dataset.value;state.selected=state.tab==='fill'?(state.selected||allSlots(partsFor(d))[0]?.key||''):'';state.openHint=false;break;
  case 'edition':{
   const previous=slot(d,partsFor(d));
+  state.sourceEdition='';
   saved.edition=el.dataset.value;
   const parts=partsFor(d);
   if(previous && !slot(d,parts)){
@@ -178,7 +195,7 @@ export function articleAction(act,el,render){
  case 'review':state.showReview=!state.showReview;break;
  case 'templateGuide':{
   const parts=partsFor(d);
-  let text=`<p>当前为<b>${saved.edition==='simple'?'简易版':'完整版'}</b>。蓝色文字可复用，橙色处按题意填入。${isChart(d)?'图表按引言、概述和两组细节展开。小作文的简易版是对应图表句式的简写。':'同一版本的蓝色句子在每道大作文中完全相同。两版共用论点与例子，完整版另有反驳依据等填空。'}</p>`;
+  let text=`<p>当前为<b>${readingEdition()==='simple'?'简易版':'完整版'}</b>。蓝色文字可复用，橙色处按题意填入。${isChart(d)?'图表按引言、概述和两组细节展开。小作文的简易版是对应图表句式的简写。':'同一版本的蓝色句子在每道大作文中完全相同。两版共用论点与例子，完整版另有反驳依据等填空。'}</p>`;
   if(d.structureNote)text+='<p>'+e(d.structureNote)+'</p>';
   text+=parts.map(p=>`<div class="guide-section"><h3>${e(p.sourceLabel||p.label)}</h3><p lang="en" class="english">${p.sentences.map(s=>s.pieces.map(w=>w.key?'<span class="fill-key">'+e(w.placeholder||'〔'+w.label+'〕')+'</span>':e(w.text)).join('')).join(' ')}</p></div>`).join('');
   openModal('本题模板骨架',text,'guide-dialog');return true;}
