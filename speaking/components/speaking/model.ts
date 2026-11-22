@@ -21,7 +21,10 @@ export const shortName = (s:Story) => s.zh;
 export const homeStories=["book-fair","museum-guide","market-birthday"];
 export const priorityStories=[...homeStories,...bank.stories.map(s=>s.id).filter(id=>!homeStories.includes(id))];
 export function searchMatch(parts:(string|undefined)[],query:string) {return !query.trim() || query.trim().toLocaleLowerCase().split(/\s+/).every(word=>parts.some(p=>p?.toLocaleLowerCase().includes(word)));}
-export const questionMatches=(q:Question,search:string)=>searchMatch([q.zh,q.en,q.focusWording,...(q.variants||[])],search);
+export function questionMatches(q:Question,search:string) {
+  const focusPhrases=q.focusAlternatives?.flatMap(alt=>[alt.en,alt.zh])??[];
+  return searchMatch([q.zh,q.en,q.focusWording,q.focusZh,...focusPhrases,...(q.variants||[])],search);
+}
 export const getQuestion=(part:Part,id:string)=>part==="p1"?p1ById.get(id):part==="p2"?cardById.get(id):p3ById.get(id);
 export function questionPart(id:string):Part|undefined {
   if(p1ById.has(id))return "p1"; if(cardById.has(id))return "p2"; if(p3ById.has(id))return "p3";

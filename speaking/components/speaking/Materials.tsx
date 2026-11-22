@@ -27,8 +27,8 @@ export function StoryPage({id,initialCard,book}:{id:string;initialCard?:string;b
   return <main className="wrap inner-page"><a className="crumb" href={path("stories")}>串题素材</a>
     <div className="page-heading"><div><span className="kicker">Personal story</span><h1>{shortName(story)}</h1><p lang="en">{story.en}</p></div><StoryIcon id={id}/></div>
     <div className="detail-grid story-detail"><article><section className="panel story-selector"><div className="inline-head"><h2>用这个故事回答哪道题</h2><span className="sub">{cards.length} 张 P2</span></div>
-      <div className="story-choices">{cards.map(c=><a key={c.id} href={path("story",id,c.id)} className={selected.id===c.id?"selected":""} aria-current={selected.id===c.id?"true":undefined}><small>{c.category}</small><Marked on={c.highlight}>{c.zh}</Marked><Done on={book.entries["done:"+c.id]?.body==="1"}/></a>)}</div>
-      <div className="selected-prompt"><span className="kicker">Part 2</span><h2 lang="en"><Marked on={selected.highlight}>{selected.en}</Marked></h2><p>{selected.zh}</p></div>
+      <div className="story-choices">{cards.map(c=><a key={c.id} href={path("story",id,c.id)} className={selected.id===c.id?"selected":""} aria-current={selected.id===c.id?"true":undefined}><small>{c.category}</small><Marked on={c.highlight}>{c.focusZh||c.zh}</Marked><Done on={book.entries["done:"+c.id]?.body==="1"}/></a>)}</div>
+      <div className="selected-prompt"><span className="kicker">Part 2</span><h2 lang="en"><Marked on={selected.highlight}>{selected.focusWording||selected.en}</Marked></h2><p>{selected.focusZh||selected.zh}</p></div>
       </section><Sample key={selected.id} q={selected} card={selected}/>
       <div className="actions story-actions"><a className="btn dark" href={path("p2",selected.id)}>打开题卡，计时练习</a>
         {(selected.followups[0]||selected.relatedFollowups?.[0])&&<a className="btn soft" href={path("p3",selected.followups[0]||selected.relatedFollowups![0],selected.id)}>{selected.followups.length?"接练对应 P3":"接练同主题 P3"}</a>}</div>

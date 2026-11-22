@@ -25,7 +25,7 @@ export function Sample({q,card}:{q:Question;card?:Card}){
 function QuestionLinks({ids,context,book,part="p3"}:{ids:string[];context?:string;book:NotebookState;part?:"p1"|"p3"}){
   return <div className="linked-list">{ids.map(id=>{
     const q=(part==="p1"?p1ById:p3ById).get(id);if(!q)return null;
-    return <a key={id} href={path(part,id,...(context?[context]:[]))}><span><strong lang="en"><Marked on={q.highlight}>{q.highlight&&q.focusWording?q.focusWording:q.en}</Marked></strong>{q.zh&&<small>{q.zh}</small>}</span><Done on={book.entries["done:"+id]?.body==="1"}/><ChevronRight size={16}/></a>;
+    return <a key={id} href={path(part,id,...(context?[context]:[]))}><span><strong lang="en"><Marked on={q.highlight}>{q.highlight&&q.focusWording?q.focusWording:q.en}</Marked></strong>{q.zh&&<small>{q.focusZh||q.zh}</small>}</span><Done on={book.entries["done:"+id]?.body==="1"}/><ChevronRight size={16}/></a>;
   })}</div>;
 }
 export function TopicPage({id,focusOnly,book}:{id:string;focusOnly:boolean;book:NotebookState}){
@@ -70,8 +70,13 @@ export function Detail({part,id,from,book}:{part:Part;id:string;from?:string;boo
   return <main className="wrap inner-page"><a className="crumb" href={back}>{topic?topic.zh+" · P1 话题":ctx?"返回 P2 · "+ctx.zh:part.toUpperCase()+" 题库"}</a>
     <div className="detail-grid"><article>
       <section className={"panel question-card "+part}><div className="inline-head"><div className="part-line"><PartLabel part={part}/><span>{card?card.category+"类":partInfo[part].name}</span></div><Speak text={q.en}/></div>
-        {card&&<p className="question-title-cn">{card.zh}</p>}<h1 lang="en"><Marked on={q.highlight&&!focusTitle}>{q.en}</Marked></h1>{!card&&<p className="translation">{q.zh}</p>}
+        {card&&<p className="question-title-cn">{card.focusZh||card.zh}</p>}<h1 lang="en"><Marked on={q.highlight}>{q.en}</Marked></h1>{!card&&<p className="translation">{q.focusZh||q.zh}</p>}
         {focusTitle&&<p className="focus-wording"><small>文字重点问法</small><mark className="question-highlight" lang="en">{focusTitle}</mark></p>}
+        {q.focusAlternatives?.map(alt=><div key={alt.en} className="focus-wording">
+          <small>同卡重点问法</small><mark className="question-highlight" lang="en">{alt.en}</mark>
+          <p lang="zh-CN">{alt.zh}</p>{alt.cues?.length&&<details className="fold"><summary>这套问法的提示点</summary>
+            <ul>{alt.cues.map(cue=><li key={cue} lang="en">{cue}</li>)}</ul></details>}
+        </div>)}
         {card&&<div className="cuebox"><strong lang="en">You should say</strong><ul>{card.cues.map((cue,i)=><li key={i} lang="en">{cue}</li>)}</ul>
           {!!card.cuesZh?.length&&<details className="fold"><summary>查看中文提示</summary><ul>{card.cuesZh.map((cue,i)=><li key={i}>{cue}</li>)}</ul></details>}
           {!!focusCues.length&&<details className="fold"><summary>文字重点的提示点</summary><ul>{focusCues.map((cue,i)=><li key={i} lang="en"><Marked on>{cue}</Marked></li>)}</ul></details>}

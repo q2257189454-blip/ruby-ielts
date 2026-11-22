@@ -11,6 +11,8 @@ export interface Question {
   variants?: string[];
   sampleNote?: string;
   focusWording?: string;
+  focusZh?: string;
+  focusAlternatives?: {en: string; zh: string; cues?: string[]}[];
   context?: {en?: string; zh: string};
 }
 export interface Topic {

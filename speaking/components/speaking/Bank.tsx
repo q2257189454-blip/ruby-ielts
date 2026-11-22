@@ -34,7 +34,7 @@ export default function QuestionBank({part,filter,setFilter,focusOnly,entries}:P
   const customMaterials=Object.values(entries).filter(e=>e.id.startsWith("material:"));
   const qRoute=(p:Part,q:Question,parent?:string)=>p==="p1"?path(p,q.id,...(focusOnly?["focus"]:[])):path(p,q.id,...(parent?[parent]:[]));
   const addQuestion=(q:Question,label:string,parent?:string)=>{
-    rows.push({id:q.id,title:q.highlight&&q.focusWording?q.focusWording:q.en,sub:q.zh,meta:label,href:qRoute(part,q,parent),done:done(q.id),highlight:q.highlight});
+    rows.push({id:q.id,title:q.highlight&&q.focusWording?q.focusWording:q.en,sub:q.focusZh||q.zh,meta:label,href:qRoute(part,q,parent),done:done(q.id),highlight:q.highlight});
     drillIds.push(q.id);
   };
   if(part==="p1")for(const t of orderedTopics){
@@ -55,7 +55,7 @@ export default function QuestionBank({part,filter,setFilter,focusOnly,entries}:P
     if(story!=="all"&&c.storyId!==story&&!own.some(e=>e.id===story))continue;
     const name=s?shortName(s):"个人经历";
     if(!questionMatches(c,search)&&!searchMatch([name,c.category,...own.map(e=>e.title),...c.cues],search))continue;
-    rows.push({id:c.id,title:c.zh,sub:c.highlight&&c.focusWording?c.focusWording:c.en,meta:"",href:path("p2",c.id,...(focusOnly?["focus"]:[])),done:done(c.id),highlight:c.highlight,category:c.category,group:name});
+    rows.push({id:c.id,title:c.focusZh||c.zh,sub:c.highlight&&c.focusWording?c.focusWording:c.en,meta:"",href:path("p2",c.id,...(focusOnly?["focus"]:[])),done:done(c.id),highlight:c.highlight,category:c.category,group:name});
     drillIds.push(c.id);
   }
   if(part==="p3")for(const q of bank.questions){
