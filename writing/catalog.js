@@ -22,6 +22,7 @@ export function updateResults(){const box=document.querySelector('#bankResults')
 function aside(){
  const selected=get('e074')||db.essays[0];const last=get(saved.recent[0]);return `<aside class="home-side">
  <section class="logic-promo"><div class="promo-kicker">${icon('chain',18)} 专项练习</div><h3>补一条逻辑链</h3><p>从「交通更便利」往下想一步。</p><div class="mini-chain"><div><i></i><span>增加公共交通投入</span></div><div class="mini-gap"><i></i><span>中间发生了什么？</span></div><div><i></i><span>早班护士能够准时到岗</span></div></div>${a(icon('pen',16)+'开始拆解','#/logic/'+(selected?.id||''),'btn forest wide')}</section>
+ ${state.bank===2?`<a class="reference-promo" href="#/corpus"><span class="mini-square">${icon('stack',19)}</span><div><h3>大作文语料库</h3><p>查填空写法、话题观点<br>和范文高频搭配</p></div></a>`:''}
  <a class="reference-promo handbook-promo" href="${state.bank===1?'#/language/小作文/句式':'#/language/大作文'}"><span class="mini-square">${icon('word',19)}</span><div><h3>写作表达手册</h3><p>大作文话题词组<br>小作文句式与同义替换</p></div><span class="card-go">${icon('right',18)}</span></a>
  ${last?`<section class="resume"><span class="mini-label">${icon('clock',15)} 上次练到</span>${a(questionTitle(last), '#/task/'+last.id,'resume-title')}</section>`:''}
  </aside>`;
