@@ -1,4 +1,5 @@
 import {build} from "esbuild";
+import {createHash} from "node:crypto";
 import {copyFile,mkdir,readFile,writeFile} from "node:fs/promises";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
@@ -22,7 +23,11 @@ if(target!==source){
   await copy(isPublicPackage?"README.md":"github-pages/README.md","README.md");
 }
 await mkdir(path.join(target,"assets"),{recursive:true});
-await copy("github-pages/index.html","index.html");
+async function contentVersion(filename) {
+  const bytes=await readFile(path.join(target,filename));
+  return createHash("sha256").update(bytes).digest("hex").slice(0,16);
+}
+const bankVersion=await contentVersion("content/bank.json");
 const css=await readFile(path.join(source,"app/globals.css"),"utf8");
 await writeFile(path.join(target,"assets/notebook.css"),css);
 await build({
@@ -32,9 +37,14 @@ await build({
     builder.onResolve({filter:/^@\/content\/phrases$/},()=>({path:path.join(source,"content/phrases.ts")}));
     builder.onResolve({filter:/^@\/content\/bank\.json$/},()=>({path:"question-bank",namespace:"speaking-data"}));
     builder.onLoad({filter:/.*/,namespace:"speaking-data"},()=>({contents:`
-      const response=await fetch(new URL("../content/bank.json",import.meta.url));
+      const response=await fetch(new URL("../content/bank.json?v=${bankVersion}",import.meta.url));
       if(!response.ok)throw new Error("题库加载失败");
       export default await response.json();
     `}));
   }}],
 });
+
+const scriptVersion=await contentVersion("assets/notebook.js");
+const template=await readFile(path.join(source,"github-pages/index.html"),"utf8");
+const index=template.replaceAll("./assets/notebook.js","./assets/notebook.js?v="+scriptVersion);
+await writeFile(path.join(target,"index.html"),index);
