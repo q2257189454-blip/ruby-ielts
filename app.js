@@ -59,7 +59,7 @@ function listChrome(bookmarks){
   const f=activeFilter;
   const categories=[['all','全部题型'],['heading','Heading'],['contain','Contain'],['mc','选择题'],['tf','判断题'],['fill','填空题'],['match','匹配题'],['short','简答题'],['reading','纯阅读']];
   const buttons=[['all','全部'],['P1','P1'],['P2','P2'],['P3','P3']].map(([id,label])=>`<button class="${f.part===id?'active':''}" data-part="${id}" aria-pressed="${f.part===id}">${label}</button>`).join('');
-  const subtitle=bookmarks?'书签保存在当前浏览器。':`<a class="new-passage" href="${esc(url('daa80192fcd1'))}">新收录 · 墨尔本摄影师 · 网上回忆版本（仅参考）</a>`;
+  const subtitle=bookmarks?'书签保存在当前浏览器。':`<a class="new-passage" href="${esc(url('synaesthesia'))}">新收录 · 联觉 Synaesthesia</a>`;
   return `<section class="index-section" aria-labelledby="index-title"><div class="section-line"><div><h2 id="index-title">${bookmarks?'已加书签的篇目':'篇目索引'}</h2><p class="section-info">${subtitle}</p></div><label class="search">${icon('search')}<input aria-label="搜索英文篇名或中文名" id="search" type="search" placeholder="搜索英文篇名或中文名" value="${esc(f.q)}"></label></div><div class="controls"><div class="part-switch" role="group" aria-label="按篇章分类">${buttons}</div><div class="selects"><label class="select-wrap"><select id="scope" aria-label="篇目范围"><option value="all"${selected(f.scope,'all')}>全部篇目</option><option value="highlight"${selected(f.scope,'highlight')}>只看高亮</option></select>${icon('chevron')}</label><label class="select-wrap"><select id="type" aria-label="筛选题型">${categories.map(([v,t])=>`<option value="${v}"${selected(f.type,v)}>${t}</option>`).join('')}</select>${icon('chevron')}</label></div></div><div id="result-list"></div></section>`;
 }
 function catalogRow(a){
