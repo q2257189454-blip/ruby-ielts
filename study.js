@@ -4,12 +4,13 @@ const shortNames={heading:'Heading',contain:'Contain',mc:'选择',tf:'T / F / NG
 const groupHints={heading:'从段落要点回想正确标题。',contain:'从题干中的细节回想它出现的段落。',mc:'点开题干，查看正确选项的中英文。',tf:'对照原文的事实，检查对象、范围和时间。',yn:'判断陈述是否符合作者的观点。',fill:'看保留空格的中文，回想英文原词。',wordbank:'根据中文空格回想英文词库中的答案。',short:'先用中文回想，再检查英文答案。',ending:'读完句首，回想能使原意完整的句尾。',match:'从题干的观点或特征定位对应的人物、地点或类别。'};
 const modes=[['parallel','逐句对照'],['original','只看原文'],['recall','遮住译文']];
 const zhTitles={article:'文章内容',questions:'题目速记',language:'语言考点'};
+const referenceRevision=3;
 let textMode=safeGet('ruby.ielts.recall.language-mode.v1','parallel');
 if(!modes.some(m=>m[0]===textMode))textMode='parallel';
 let questionOpen=new Map();
 const openHeadings = new Map();
 function addr(ref,note){if(!ref)return '';const [p,s]=ref.split('.');return note.paragraphs.find(x=>x.id===p)?.sentences[Number(s)-1]?.[0]||''}
-function loc(id,ref,returnTo,from='questions'){if(!ref)return '';return `<a class="ref-link" href="${esc(url(id,'article',{at:ref,rev:2,back:returnTo,from}))}">${icon('pin')}${esc(labelRef(ref))}</a>`}
+function loc(id,ref,returnTo,from='questions'){if(!ref)return '';return `<a class="ref-link" href="${esc(url(id,'article',{at:ref,rev:referenceRevision,back:returnTo,from}))}">${icon('pin')}${esc(labelRef(ref))}</a>`}
 function jumpLink(target,txt){return `<button type="button" class="q-shortcut" data-scroll="${esc(target)}">${esc(txt)}</button>`}
 function toolsMode(){return `<div class="mode" role="group" aria-label="原文显示方式">${modes.map(([key,name])=>`<button type="button" data-mode="${key}" class="${textMode===key?'active':''}" aria-pressed="${textMode===key}">${name}</button>`).join('')}</div>`}
 function asideLinks(rows,detail){return `<aside class="aside"><div class="aside-head"><h2>本页目录</h2>${icon('list')}</div><nav aria-label="本页目录">${rows.map(([id,t])=>`<button data-scroll="${esc(id)}">${esc(t)}</button>`).join('')}</nav>${detail?`<small>${esc(detail)}</small>`:''}</aside>`}
@@ -23,8 +24,8 @@ function paragraphGist(paragraph, inDirectory = false) {
   return `<details class="${inDirectory ? 'directory-gist' : 'paragraph-gist'}"><summary aria-label="${esc(label)}"><span>${esc(title)}</span>${icon('chevron')}</summary><p>${esc(gist)}</p></details>`;
 }
 
-function articleDirectory(paragraphs) {
-  const sections = [['abstract', '文章大意'], ['logic', '行文逻辑'], ['passage', '原文与逐句翻译']];
+function articleDirectory(paragraphs, background) {
+  const sections = [['abstract', '文章大意'], ['logic', '行文逻辑'], ['passage', background ? '背景文与逐句翻译' : '原文与逐句翻译']];
   const links = sections.map(([id, title]) => `<button type="button" data-scroll="${id}">${title}</button>`).join('');
   const entries = paragraphs.map(p => {
     const label = '定位到' + labelRef(p.id) + '正文';
@@ -121,7 +122,7 @@ function renderArticle(a,n,params){
   const flow=`<section class="study-card" id="logic"><h2>行文逻辑</h2><div class="logic-links${grouped ? ' study-outline' : ''}">${outline}</div><details class="para-briefs"><summary>逐段大意 <span class="chev">${icon('chevron')}</span></summary>${paragraphs.map(p=>`<div class="brief-row"><button data-scroll="p-${esc(p.id)}">${esc(labelRef(p.id))}${p.role?' · '+esc(p.role):''}</button><span>${esc(p.brief)}</span></div>`).join('')}</details></section>`;
   const paragraphNote = n.paragraphNote ? `<p class="section-hint">${esc(n.paragraphNote)}</p>` : '';
   const text=`<section class="study-card para-card" id="passage" data-heading-note="${esc(headingKey)}"><div class="switch-line"><h2 class="source-heading">文章主体</h2><div class="passage-tools">${toolsMode()}${headingControl}</div></div>${paragraphNote}<div id="passage-body" class="${textMode==='original'?'original-only':textMode==='recall'?'hidden-zh':''}">${lead}${paragraphs.map(p => renderPassageParagraph(p, selected, returnLink, matches.get(p.id), visibleHeadings?.has(p.id))).join('')}${notes}</div></section>`;
-  return {main:overview+flow+text,side:articleDirectory(paragraphs)};
+  return {main:overview+flow+text,side:articleDirectory(paragraphs,a.sourceKind==='background')};
 }
 function headingBank(opts,a,n,bankId){return `<details class="head-library"><summary>${icon('list')} 全部 ${opts.length} 个标题与中文 <span class="chev">${icon('chevron')}</span></summary><div class="head-opts">${opts.map(([num,en,zh,par,ref,why])=>`<div class="opt"><span class="opt-en" lang="en"><b>${esc(num)}</b>${esc(en)}</span><p>${esc(zh)}</p><details><summary>查看匹配或排除理由</summary><p><strong>${par?esc(par)+' 段':'干扰项'}</strong> · ${esc(why)}</p>${ref?`<blockquote class="evidence" lang="en">${esc(addr(ref,n))}</blockquote>${loc(a.id,ref,bankId)}`:''}</details></div>`).join('')}</div></details>`}
 function headingFlow(articleId, group, note) {
@@ -132,7 +133,7 @@ function headingFlow(articleId, group, note) {
     const stepId = id + '-' + (index + 1);
     const first = paragraphs[0];
     const span = paragraphs.length > 1 ? first + '–' + paragraphs[paragraphs.length - 1] : first;
-    const link = first ? `<a class="flow-ref" href="${esc(url(articleId, 'article', {at: first + '.1', rev: 2, back: stepId, from: 'questions'}))}">${esc(labelRef(span))}</a>` : '';
+    const link = first ? `<a class="flow-ref" href="${esc(url(articleId, 'article', {at: first + '.1', rev: referenceRevision, back: stepId, from: 'questions'}))}">${esc(labelRef(span))}</a>` : '';
     return `<li id="${esc(stepId)}"><div class="flow-title">${link}<strong>${esc(title)}</strong></div>${explanation ? `<p>${esc(explanation)}</p>` : ''}</li>`;
   }).join('');
   return `<section class="heading-flow" id="${esc(id)}" aria-labelledby="${esc(id)}-title"><h4 id="${esc(id)}-title">全文行文流程</h4><ol>${steps}</ol></section>`;
@@ -163,12 +164,15 @@ function questionCard(a,n,g,q){
   if(q.correct)answer=q.correct.map(([ltr,en,zh,ref])=>`<div class="correct-row"><b>${esc(ltr)}</b> <span class="q-en" lang="en">${esc(en)}</span><p>${esc(zh)}</p>${loc(a.id,ref,qid)}</div>`).join('');
   else {
     const value=g.type==='contain'?q.answer+' 段':q.answer;
-    const initial=g.type==='contain'?'所在段落':g.type==='heading'?'正确标题':'答案';
+    const initial=n.questionNote?'参考答案':g.type==='contain'?'所在段落':g.type==='heading'?'正确标题':'答案';
     const refs=[...new Set([q.ref,...(q.refs||[])].filter(Boolean))];
     const contextOnly=q.contextOnly||q.answer==='NOT GIVEN';
+    const evidenceLabel=q.evidenceLabel||(n.questionNote?'本页背景对照':contextOnly?'相关原文':'');
+    const referenceQuote=q.referenceQuote?`<span class="evidence-label">参考解析所引文字</span><blockquote class="evidence" lang="en">${esc(q.referenceQuote)}</blockquote>`:'';
+    const evidence=g.type!=='ending'&&q.ref?`${evidenceLabel?`<span class="evidence-label">${esc(evidenceLabel)}</span>`:''}<blockquote class="evidence" lang="en">${esc(addr(q.ref,n))}</blockquote>`:'';
     const glossLabel = g.type === 'fill' ? '<span class="answer-label">答案中文</span> ' : '';
     const solution = q.solution ? `<p class="answer-zh">${glossLabel}${esc(q.solution)}</p>` : '';
-    answer=`<div class="q-answer"><span class="answer-label">${initial}</span><strong>${esc(value)}</strong></div>${solution}${q.why?`<p class="reason">${esc(q.why)}</p>`:''}${g.type!=='ending'&&q.ref?`${contextOnly?'<span class="evidence-label">相关原文</span>':''}<blockquote class="evidence" lang="en">${esc(addr(q.ref,n))}</blockquote>`:''}${refs.map(r=>loc(a.id,r,qid)).join('')}`;
+    answer=`<div class="q-answer"><span class="answer-label">${initial}</span><strong>${esc(value)}</strong></div>${solution}${q.why?`<p class="reason">${esc(q.why)}</p>`:''}${referenceQuote}${evidence}${refs.map(r=>loc(a.id,r,qid)).join('')}`;
   }
   return `<details id="${esc(qid)}" class="q-card" data-qkey="${esc(key)}" ${isOpen?'open':''}><summary><span class="q-num">Q${esc(q.no)}</span><span><span class="q-en" lang="en">${esc(q.en)}</span><span class="q-zh">${esc(q.zh)}</span>${questionChoices(q.choices)}${headingCue}${clue}</span><span class="reveal-cue"><span class="show">看答案</span><span class="hide">收起</span><span class="chev">${icon('chevron')}</span></span></summary><div class="q-detail">${answer}</div></details>`
 }
@@ -180,7 +184,8 @@ function questionView(a,n){
   const groups=n.groups.map((g,i)=>({...g,anchor:n.groups.slice(0,i).some(v=>v.type===g.type)?'g-'+g.type+'-'+i:'g-'+g.type}));
   const title=g=>g.label||groupNames[g.subtype]||groupNames[g.type]||'题目';
   const nav=groups.map(g=>`<button data-scroll="${g.anchor}" class="q-shortcut ${['heading','contain'].includes(g.type)?'focus-type':''}">${esc(shortNames[g.subtype]||shortNames[g.type]||'题目')} <small>Q${esc(g.range)}</small></button>`).join('');
-  const head=`<div class="q-head"><div class="mini-heading"><h2>题型速记</h2><button class="toolbtn" id="q-all">${icon('cards')}<span>展开全部答案</span></button></div><div class="q-jumps">${nav}</div>${n.inferredAnswers?'<p class="group-hint">本篇答案依据题干与原文推定。</p>':''}</div>`;
+  const note=n.questionNote||(n.inferredAnswers?'本篇答案依据题干与原文推定。':'');
+  const head=`<div class="q-head"><div class="mini-heading"><h2>${n.questionNote?'参考题速记':'题型速记'}</h2><button class="toolbtn" id="q-all">${icon('cards')}<span>展开全部答案</span></button></div><div class="q-jumps">${nav}</div>${note?`<p class="group-hint">${esc(note)}</p>`:''}</div>`;
   const panels=groups.map(g=>{
     const bankLabel = g.wordbankLabel || (g.type === 'match' ? '查看匹配选项' : '查看备选词');
     const bank=g.wordbank?.length?`<details class="head-library"><summary>${icon('list')} ${esc(bankLabel)} <span class="chev">${icon('chevron')}</span></summary><div class="wordbank">${g.wordbank.map(([k,en,zh])=>`<span><b>${esc(k)}</b> ${esc(en)}${zh?' · '+esc(zh):''}</span>`).join('')}</div></details>`:'';
@@ -190,7 +195,8 @@ function questionView(a,n){
     const flow = g.type === 'heading' ? headingFlow(a.id, g, n) : '';
     return `<section id="${esc(g.anchor)}" class="q-section"><h3>${esc(title(g))}<span class="range">Q${esc(g.range)}</span></h3><p class="group-hint">${esc(instruction)}</p>${summaryContext(g)}${opts}${bank}${g.items.map(q=>questionCard(a,n,g,q)).join('')}${flow}</section>`;
   }).join('');
-  return {main:head+panels,side:asideLinks(groups.map(g=>[g.anchor,title(g)+' · Q'+g.range]),'点题干查看答案，再点定位句回到原文。')};
+  const hint=n.questionNote?'点题干看参考答案，点段落位置对照背景文。':'点题干查看答案，再点定位句回到原文。';
+  return {main:head+panels,side:asideLinks(groups.map(g=>[g.anchor,title(g)+' · Q'+g.range]),hint)};
 }
 function vocabularyCard(articleId, words) {
   if (!words?.length) return '';
@@ -203,7 +209,8 @@ function vocabularyCard(articleId, words) {
 
 function languageView(a,n){
   const vocabulary = vocabularyCard(a.id, n.vocabulary);
-  const pairs=`<section class="study-card" id="pairs"><h2>同义替换</h2><p class="section-hint">${n.groups.length?'按题号对照题干与原文，按段落复习词义。':'对照原文表达和释义。'}</p>${n.pairs.map(([qs,from,to,zh,ref,kind])=>`<div class="pair"><small>${esc(qs)}${kind?' · '+esc(kind):''}</small><div class="pair-main"><span lang="en">${esc(from)}</span><span class="swap">${kind==='原文释义'?'意为':'对应'}</span><mark lang="en">${esc(to)}</mark></div><p>${esc(zh)}</p>${loc(a.id,ref,'pairs','language')}</div>`).join('')}</section>`;
+  const pairHint=n.questionNote?'按题号对照参考题表达与背景文措辞。':n.groups.length?'按题号对照题干与原文，按段落复习词义。':'对照原文表达和释义。';
+  const pairs=`<section class="study-card" id="pairs"><h2>同义替换</h2><p class="section-hint">${pairHint}</p>${n.pairs.map(([qs,from,to,zh,ref,kind])=>`<div class="pair"><small>${esc(qs)}${kind?' · '+esc(kind):''}</small><div class="pair-main"><span lang="en">${esc(from)}</span><span class="swap">${kind==='原文释义'?'意为':'对应'}</span><mark lang="en">${esc(to)}</mark></div><p>${esc(zh)}</p>${loc(a.id,ref,'pairs','language')}</div>`).join('')}</section>`;
   const points=`<section class="study-card" id="points"><h2>高频考点解析</h2>${n.points.map(([title,num,body,ref])=>`<div class="point"><small>${esc(num)}</small><h3>${esc(title)}</h3><p>${esc(body)}</p>${loc(a.id,ref,'points','language')}</div>`).join('')}</section>`;
   const clauses=`<section class="study-card" id="clauses"><h2>从句拆解</h2>${n.clauses.map(([ref,title,main,scope,step])=>{const [p,s]=ref.split('.');const zh=n.paragraphs.find(x=>x.id===p).sentences[Number(s)-1][1];return `<div class="clause"><h3>${esc(title)}</h3><blockquote lang="en">${esc(addr(ref,n))}</blockquote><p><span class="term">主干　</span><span lang="en">${esc(main)}</span></p><p><span class="term">从句　</span>${esc(scope)}</p><p><span class="term">顺读　</span>${esc(step)}</p><details class="source-block"><summary>整句译文 ${icon('chevron')}</summary><p>${esc(zh)}</p></details>${loc(a.id,ref,'clauses','language')}</div>`}).join('')}</section>`;
   const sections = [...(vocabulary ? [['vocabulary','核心词汇']] : []), ['pairs','同义替换'], ['points','高频考点'], ['clauses','从句拆解']];
@@ -215,10 +222,12 @@ function studyPage(article,n,tab,params,marked){
   const chosen = version?.[0] || article.id;
   const a = version?.[2] ? {...article, ...version[2]} : article;
   const readingLabel = a.sourceKind === 'background' ? '背景资料（非原题）' : '纯阅读';
+  const sourceLabel=n.questionNote?a.sourceLabel:!n.groups.length?readingLabel:'';
   const studyGroups = a.studyGroupCount ? `<span class="meta-inline">${esc(a.studyGroupCount)} 个速记主题</span>` : '';
-  const meta=`<div class="meta">${partStamp(a.part)}${n.paragraphs.length?`<span class="meta-inline">${n.paragraphs.length} 段</span>`:''}${studyGroups}${n.groups.length?'':`<span class="meta-inline">${readingLabel}</span>`}</div>`;
+  const meta=`<div class="meta">${partStamp(a.part)}${n.paragraphs.length?`<span class="meta-inline">${n.paragraphs.length} 段</span>`:''}${studyGroups}${sourceLabel?`<span class="meta-inline">${esc(sourceLabel)}</span>`:''}</div>`;
   const variants=a.variants?`<div class="variants"><span>${esc(a.versionLabel || '题型版本')}</span>${a.variants.map(([id,name])=>`<a class="${chosen===id?'active':''}"${chosen===id?' aria-current="true"':''} href="${esc(url(a.id,tab,{v:id===a.id?null:id}))}">${esc(name)}</a>`).join('')}</div>`:'';
-  const tabs=`<nav class="study-tabs" aria-label="速记分区">${Object.entries(zhTitles).map(([key,label])=>`<a href="${esc(url(a.id,key))}" class="${tab===key?'active':''}" ${tab===key?'aria-current="page"':''}>${icon({article:'book',questions:'cards',language:'pen'}[key])}${label}</a>`).join('')}</nav>`;
+  const titles=n.questionNote?{...zhTitles,article:'背景文章',questions:'参考题速记'}:zhTitles;
+  const tabs=`<nav class="study-tabs" aria-label="速记分区">${Object.entries(titles).map(([key,label])=>`<a href="${esc(url(a.id,key))}" class="${tab===key?'active':''}" ${tab===key?'aria-current="page"':''}>${icon({article:'book',questions:'cards',language:'pen'}[key])}${label}</a>`).join('')}</nav>`;
   const view=tab==='questions'?questionView(a,n):tab==='language'?languageView(a,n):renderArticle(a,n,params);
   const subtitle=n.subtitle?`<p class="passage-subtitle" id="subtitle"><i lang="en">${esc(n.subtitle[0])}</i>　${esc(n.subtitle[1])}</p>`:'';
   const reader = `<div class="reader-col">${view.main}</div>`;
