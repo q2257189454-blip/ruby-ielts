@@ -108,7 +108,9 @@ function renderArticle(a,n,params){
   const lead = supplementaryBlock('导语', n.lead, 'lead', selected);
   const notes = supplementaryBlock('原文注释', n.footnotes, 'note', selected);
   const returnLink = beforeText(params, a.id);
-  const overview=`<section class="study-card overview" id="abstract"><h2>文章大意</h2><p>${esc(n.summary)}</p></section>`;
+  const related = a.relatedReading;
+  const relatedLink = related ? `<a class="text-link" href="${esc(url(related.id))}">同主题阅读 · ${esc(related.title)}</a>` : '';
+  const overview=`<section class="study-card overview" id="abstract"><h2>文章大意</h2><p>${esc(n.summary)}</p>${relatedLink}</section>`;
   const grouped = Boolean(a.studyGroupCount);
   const matches = paragraphHeadingOptions(n.groups);
   const headingKey = a.variants?.some(([id]) => id === params.get('v')) ? params.get('v') : a.id;
@@ -172,7 +174,7 @@ function questionCard(a,n,g,q){
 }
 function questionView(a,n){
   if (a.sourceKind === 'background' && !n.groups.length) {
-    return {main:`<section class="study-card overview"><h2>背景阅读资料</h2><p>当前版本收录的是背景长文，段号对应这份资料。核对考试段落请以带题试卷为准。</p><a class="text-link" href="${esc(url(a.id,'article'))}">看文章内容</a></section>`,side:''};
+    return {main:`<section class="study-card overview"><h2>背景阅读资料</h2><p>这份背景材料未附题目。可在文章内容中查看逐句翻译和段落大意。</p><a class="text-link" href="${esc(url(a.id,'article'))}">看文章内容</a></section>`,side:''};
   }
   if(!n.groups.length)return {main:`<section class="study-card overview"><h2>纯阅读篇目</h2><p>这篇文章没有附带题目。可以用逐句对照、段落大意和语言考点复习。</p><a class="text-link" href="${esc(url(a.id,'article'))}">看文章内容</a></section>`,side:''};
   const groups=n.groups.map((g,i)=>({...g,anchor:n.groups.slice(0,i).some(v=>v.type===g.type)?'g-'+g.type+'-'+i:'g-'+g.type}));
