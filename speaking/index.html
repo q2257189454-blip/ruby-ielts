@@ -7,14 +7,14 @@
   <meta name="description" content="雅思口语练习本。按话题练中英范答、P2 串题和 P3 追问，保存自己的练习笔记。">
   <title>雅思口语练习本</title>
   <link rel="icon" href="./public/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./assets/notebook.css">
-  <link rel="modulepreload" href="./assets/notebook.js?v=ac5b653ddf4c8e5a">
+  <link rel="stylesheet" href="./assets/notebook.css?v=dd364f30769b08b5">
+  <link rel="modulepreload" href="./assets/notebook.js?v=de458dcb5e852977">
 </head>
 <body>
   <div id="notebook"><main class="wrap inner-page"><p role="status">正在打开口语练习本…</p></main></div>
   <noscript>请开启 JavaScript 以浏览双语范答和保存练习记录。</noscript>
   <script type="module">
-    import("./assets/notebook.js?v=ac5b653ddf4c8e5a").catch(() => {
+    import("./assets/notebook.js?v=de458dcb5e852977").catch(() => {
       document.querySelector("#notebook p").textContent = "题库加载中断，请刷新页面重试。";
     });
   </script>
