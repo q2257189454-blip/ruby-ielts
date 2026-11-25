@@ -8,7 +8,7 @@ const source=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
 const manifest=JSON.parse(await readFile(path.join(source,"package.json"),"utf8"));
 const isPublicPackage=manifest.name==="ielts-speaking-notebook";
 const target=process.argv[2]?path.resolve(process.argv[2]):isPublicPackage?source:path.join(source,"outputs/speaking");
-const components=["Bank.tsx","Common.tsx","Detail.tsx","Home.tsx","Materials.tsx","NotebookView.tsx","Phrasebook.tsx","Practice.tsx","model.ts","types.ts"];
+const components=["Bank.tsx","Common.tsx","Detail.tsx","Home.tsx","Materials.tsx","NotebookView.tsx","Phrasebook.tsx","Practice.tsx","model.ts","types.ts","workbook.ts"];
 const files=["scripts/build-speaking-pages.mjs","github-pages/main.tsx","github-pages/index.html","app/globals.css","content/phrases.ts","content/bank.json","public/favicon.svg",...components.map(file=>"components/speaking/"+file)];
 
 async function copy(sourceFile,targetFile=sourceFile){
@@ -46,5 +46,6 @@ await build({
 
 const scriptVersion=await contentVersion("assets/notebook.js");
 const template=await readFile(path.join(source,"github-pages/index.html"),"utf8");
-const index=template.replaceAll("./assets/notebook.js","./assets/notebook.js?v="+scriptVersion);
+const cssVersion=await contentVersion("assets/notebook.css");
+const index=template.replaceAll("./assets/notebook.js","./assets/notebook.js?v="+scriptVersion).replaceAll("./assets/notebook.css","./assets/notebook.css?v="+cssVersion);
 await writeFile(path.join(target,"index.html"),index);

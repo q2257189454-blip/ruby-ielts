@@ -13,7 +13,7 @@ export function Stories({book}:{book:NotebookState}){
   const matchesCategory=(ids:string[])=>!category||ids.some(id=>cardById.get(id)?.category===category);
   const own=Object.values(book.entries).filter(e=>e.id.startsWith("material:")&&matchesCategory(e.cards)&&searchMatch([e.title,e.body],query));
   const prepared=priorityStories.map(id=>storiesById.get(id)!).filter(s=>s&&matchesCategory(s.topics.map(t=>t.cardId))&&searchMatch([s.zh,s.en,s.coreZh,...s.keywords,...s.topics.map(t=>cardById.get(t.cardId)?.zh)],query));
-  return <main className="wrap inner-page"><div className="page-heading"><div><span className="kicker">Story bank</span><h1>串题素材</h1><p>选一段熟悉的经历，对照它在不同 P2 题目里的完整讲法。</p></div><a className="btn dark" href={path("new")}><Plus size={17}/>添加素材</a></div>
+  return <main className="wrap inner-page"><div className="page-heading"><div><span className="kicker">Story bank</span><h1>串题素材</h1><p>选一段经历，点开同组题卡，对照每道题的讲法。细节是练习示例，可以换成自己的回忆。</p></div><a className="btn dark" href={path("new")}><Plus size={17}/>添加素材</a></div>
     <label className="search solo"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="搜索故事、人物或 P2 题目" aria-label="搜索串题素材"/></label>
     <CategoryChoices value={category} change={setCategory}/>
     <div className="story-grid">{own.map(e=><a key={e.id} className="story-box" href={path("material",e.id.slice(9))}><div className="story-box-top"><span className="tile-icon sage"><NotebookPen size={23}/></span><span>自建素材</span></div><h2>{e.title}</h2><p className="clamp">{e.body}</p><small>{e.cards.filter(id=>cardById.has(id)).length} 张关联题卡</small></a>)}
@@ -27,8 +27,8 @@ export function StoryPage({id,initialCard,book}:{id:string;initialCard?:string;b
   return <main className="wrap inner-page"><a className="crumb" href={path("stories")}>串题素材</a>
     <div className="page-heading"><div><span className="kicker">Personal story</span><h1>{shortName(story)}</h1><p lang="en">{story.en}</p></div><StoryIcon id={id}/></div>
     <div className="detail-grid story-detail"><article><section className="panel story-selector"><div className="inline-head"><h2>用这个故事回答哪道题</h2><span className="sub">{cards.length} 张 P2</span></div>
-      <div className="story-choices">{cards.map(c=><a key={c.id} href={path("story",id,c.id)} className={selected.id===c.id?"selected":""} aria-current={selected.id===c.id?"true":undefined}><small>{c.category}</small><Marked on={c.highlight}>{c.focusZh||c.zh}</Marked><Done on={book.entries["done:"+c.id]?.body==="1"}/></a>)}</div>
-      <div className="selected-prompt"><span className="kicker">Part 2</span><h2 lang="en"><Marked on={selected.highlight}>{selected.focusWording||selected.en}</Marked></h2><p>{selected.focusZh||selected.zh}</p></div>
+      <div className="story-choices">{cards.map(c=><a key={c.id} href={path("story",id,c.id)} className={selected.id===c.id?"selected":""} aria-current={selected.id===c.id?"true":undefined}><small>{c.category}</small><Marked on={c.highlight}>{c.number} · {c.titleZh}</Marked><Done on={book.entries["done:"+c.id]?.body==="1"}/></a>)}</div>
+      <div className="selected-prompt"><span className="kicker">Part 2</span><h2 lang="en"><Marked on={selected.highlight}>{selected.en}</Marked></h2><p>{selected.zh}</p></div>
       </section><Sample key={selected.id} q={selected} card={selected}/>
       <div className="actions story-actions"><a className="btn dark" href={path("p2",selected.id)}>打开题卡，计时练习</a>
         {(selected.followups[0]||selected.relatedFollowups?.[0])&&<a className="btn soft" href={path("p3",selected.followups[0]||selected.relatedFollowups![0],selected.id)}>{selected.followups.length?"接练对应 P3":"接练同主题 P3"}</a>}</div>

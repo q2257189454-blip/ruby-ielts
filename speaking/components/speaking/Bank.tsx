@@ -1,7 +1,8 @@
 "use client";
-import {useState} from "react";
+import {useRef, useState} from "react";
+import {importWorkbook,clearWorkbook} from "./workbook";
 import {ChevronRight, Highlighter, Search, Shuffle, X} from "lucide-react";
-import {bank, cardById, orderedTopics, parents, priorityStories, questionMatches, randomId, searchMatch, shortName, storiesById} from "./model";
+import {bank, personalEdition, cardById, orderedTopics, parents, priorityStories, questionMatches, randomId, searchMatch, shortName, storiesById} from "./model";
 import {categories, Category, Entry, Part, partInfo, parts, path, Question} from "./types";
 import {Done, Empty, Marked, partIcons} from "./Common";
 
@@ -23,6 +24,29 @@ function RowLink({row}:{row:Row}){
 export function CategoryChoices({value,change}:{value:Category|"";change:(value:Category|"")=>void}){
   return <div className="category-choices" aria-label="P2 题卡分类">{(["",...categories] as const).map(c=>
     <button key={c} className={value===c?"selected":""} aria-pressed={value===c} onClick={()=>change(c)}>{c?c+"类":"全部类别"}</button>)}</div>;
+}
+function WorkbookChooser(){
+  const input=useRef<HTMLInputElement>(null);
+  const [message,setMessage]=useState("");
+  const [busy,setBusy]=useState(false);
+  async function select(file?:File){
+    if(!file)return;
+    setBusy(true);setMessage("");
+    try {await importWorkbook(file,bank.cards);location.reload();}
+    catch(error){setMessage(error instanceof Error?error.message:"读取失败，请重新选择练习册。");setBusy(false);}
+    finally{if(input.current)input.current.value="";}
+  }
+  function reset(){
+    try{clearWorkbook();location.reload();}
+    catch{setMessage("当前浏览器无法更改已保存的版本。");}
+  }
+  return <div className="workbook-choice">
+    <span><strong>{personalEdition?"个人练习册":"公开匿名示例"}</strong> · 57 张题卡</span>
+    <button className="mini" disabled={busy} onClick={()=>input.current?.click()}>{busy?"正在读取…":personalEdition?"更换练习册":"导入个人练习册 PDF"}</button>
+    {personalEdition&&<button className="mini" onClick={reset}>切回公开示例</button>}
+    <input hidden ref={input} type="file" accept="application/pdf,.pdf" aria-label="选择个人练习册 PDF" onChange={e=>void select(e.target.files?.[0])}/>
+    <small>个人素材仅保存在当前浏览器。</small>{message&&<p role="alert">{message}</p>}
+  </div>;
 }
 export default function QuestionBank({part,filter,setFilter,focusOnly,entries}:Props){
   const {search,story,category,page}=filter;
@@ -54,8 +78,8 @@ export default function QuestionBank({part,filter,setFilter,focusOnly,entries}:P
     const s=storiesById.get(c.storyId), own=customMaterials.filter(e=>e.cards.includes(c.id));
     if(story!=="all"&&c.storyId!==story&&!own.some(e=>e.id===story))continue;
     const name=s?shortName(s):"个人经历";
-    if(!questionMatches(c,search)&&!searchMatch([name,c.category,...own.map(e=>e.title),...c.cues],search))continue;
-    rows.push({id:c.id,title:c.focusZh||c.zh,sub:c.highlight&&c.focusWording?c.focusWording:c.en,meta:"",href:path("p2",c.id,...(focusOnly?["focus"]:[])),done:done(c.id),highlight:c.highlight,category:c.category,group:name});
+    if(!questionMatches(c,search)&&!searchMatch([name,c.titleZh,c.number,c.category,...c.outline,...own.map(e=>e.title),...c.cues],search))continue;
+    rows.push({id:c.id,title:c.number+" · "+c.titleZh,sub:c.en,meta:"",href:path("p2",c.id,...(focusOnly?["focus"]:[])),done:done(c.id),highlight:c.highlight,category:c.category,group:name});
     drillIds.push(c.id);
   }
   if(part==="p3")for(const q of bank.questions){
@@ -73,6 +97,7 @@ export default function QuestionBank({part,filter,setFilter,focusOnly,entries}:P
     <div className="page-heading"><div><span className="kicker">Question bank</span><h1>大陆口语题库</h1></div>
       <button className="btn dark" onClick={draw} disabled={!drillIds.length}><Shuffle size={16}/>从当前范围抽题</button></div>
     <div className="part-tabs" aria-label="题库分区">{parts.map(p=>{const Icon=partIcons[p];return <a key={p} href={path("bank",p,...(focusOnly?["focus"]:[]))} className={p===part?"selected":""} aria-current={p===part?"page":undefined}><Icon size={18}/><strong>Part {p.slice(1)}</strong> {partInfo[p].name}</a>;})}</div>
+    {part==="p2"&&<WorkbookChooser/>}
     <div className="filters">
       <label className="search"><Search size={18}/><input aria-label="搜索中英文题目或关键词" placeholder={part==="p2"?"搜索题目、故事或关键词":"搜索中英文题目或关键词"} value={search} onChange={e=>update({search:e.target.value})}/>{search&&<button aria-label="清空搜索" onClick={()=>update({search:""})}><X size={16}/></button>}</label>
       <a className={"btn focus-toggle "+(focusOnly?"selected":"outline")} href={path("bank",part,...(focusOnly?[]:["focus"]))} onClick={()=>update({page:1})} aria-label={focusOnly?"显示全部大陆题目":"只看文字重点"}><Highlighter size={16}/>{focusOnly?"只看重点 · 已开启":"只看文字重点"}</a>

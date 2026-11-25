@@ -23,6 +23,8 @@ export interface Topic {
   questions: Question[];
 }
 export interface Card extends Question {
+  titleZh: string;
+  number: string;
   category: Category;
   storyId: string;
   cues: string[];

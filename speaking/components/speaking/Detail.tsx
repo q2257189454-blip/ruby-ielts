@@ -15,11 +15,11 @@ export function Sample({q,card}:{q:Question;card?:Card}){
   function toggleChinese(){setChinese(!chinese);writeLocal("sample-chinese",!chinese);}
   const english=q.sample.split(/\n\s*\n/),translation=q.sampleZh.split(/\n\s*\n/);
   return <section className="panel sample-panel">
-    <div className="inline-head"><div><span className="kicker">Model answer</span><h2>{card?"两分钟完整示范":"简短回答示例"}</h2></div><div className="sample-tools"><Speak text={q.sample} label="听范答"/>{show&&<button className="mini" onClick={toggleChinese} aria-pressed={chinese}>{chinese?"隐藏中文":"显示中文"}</button>}<button className="mini" onClick={()=>setShow(!show)} aria-expanded={show}>{show?"收起范答":"展开范答"}</button></div></div>
+    <div className="inline-head"><div><span className="kicker">Model answer</span><h2>{card?"口头示范 · 中英对照":"简短回答示例"}</h2></div><div className="sample-tools"><Speak text={q.sample} label="听范答"/>{show&&<button className="mini" onClick={toggleChinese} aria-pressed={chinese}>{chinese?"隐藏中文":"显示中文"}</button>}<button className="mini" onClick={()=>setShow(!show)} aria-expanded={show}>{show?"收起范答":"展开范答"}</button></div></div>
+    {card&&<p className="replaceable"><strong>这题怎么换</strong> {card.replaceable}</p>}
     {card&&<div className="memory-path"><span>记忆顺序</span><ol>{card.outline.map((x,i)=><li key={i}>{x}</li>)}</ol></div>}
     {show&&<div className="sample-text">{english.map((paragraph,i)=><div key={i} className="answer-pair"><p lang="en">{paragraph}</p>{chinese&&<p className="answer-translation" lang="zh-CN">{translation[i]}</p>}</div>)}</div>}
     {!card&&q.sampleNote&&<p className="replaceable"><strong>可换成你的细节</strong> {q.sampleNote}</p>}
-    {card&&<p className="replaceable"><strong>可换成你的细节</strong> {card.replaceable}</p>}
   </section>;
 }
 function QuestionLinks({ids,context,book,part="p3"}:{ids:string[];context?:string;book:NotebookState;part?:"p1"|"p3"}){
@@ -69,8 +69,8 @@ export function Detail({part,id,from,book}:{part:Part;id:string;from?:string;boo
   const focusCues=card?.focusCues?.length&&card.focusCues.some((x,i)=>compact(x)!==compact(card.cues[i]||""))?card.focusCues:[];
   return <main className="wrap inner-page"><a className="crumb" href={back}>{topic?topic.zh+" · P1 话题":ctx?"返回 P2 · "+ctx.zh:part.toUpperCase()+" 题库"}</a>
     <div className="detail-grid"><article>
-      <section className={"panel question-card "+part}><div className="inline-head"><div className="part-line"><PartLabel part={part}/><span>{card?card.category+"类":partInfo[part].name}</span></div><Speak text={q.en}/></div>
-        {card&&<p className="question-title-cn">{card.focusZh||card.zh}</p>}<h1 lang="en"><Marked on={q.highlight}>{q.en}</Marked></h1>{!card&&<p className="translation">{q.focusZh||q.zh}</p>}
+      <section className={"panel question-card "+part}><div className="inline-head"><div className="part-line"><PartLabel part={part}/><span>{card?card.category+"类 · "+card.number:partInfo[part].name}</span></div><Speak text={q.en}/></div>
+        {card&&<p className="question-title-cn">{card.titleZh}</p>}<h1 lang="en"><Marked on={q.highlight}>{q.en}</Marked></h1>{card&&<p className="translation">{card.zh}</p>}{!card&&<p className="translation">{q.focusZh||q.zh}</p>}
         {focusTitle&&<p className="focus-wording"><small>文字重点问法</small><mark className="question-highlight" lang="en">{focusTitle}</mark></p>}
         {q.focusAlternatives?.map(alt=><div key={alt.en} className="focus-wording">
           <small>同卡重点问法</small><mark className="question-highlight" lang="en">{alt.en}</mark>

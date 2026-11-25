@@ -3,8 +3,20 @@ import {AudioLines, BookOpen, CircleCheck, Compass, FolderOpen, Headphones, Laye
 import { useState } from "react";
 import {path,Part} from "./types";
 export const partIcons={p1:MessagesSquare,p2:Mic,p3:Layers3};
-const storyIcons: Record<string,LucideIcon> = {"book-fair":BookOpen,"museum-guide":Compass,"market-birthday":Utensils,"kite-making":Wind,maggie:Camera,"olympic-gymnast":Sparkles,"riverside-park":Trees,"shopping-complex":Store,"poster-print":Monitor,"little-prince":BookOpen,"market-sound":Volume2,"cycling-open-day":Bike};
-export const storyColors: Record<string,string>={"book-fair":"pink","museum-guide":"sage","market-birthday":"apricot","kite-making":"mist","olympic-gymnast":"mist",maggie:"lilac","riverside-park":"sage","shopping-complex":"lilac","poster-print":"mist","little-prince":"apricot","market-sound":"lilac","cycling-open-day":"sage"};
+const storyIcons: Record<string,LucideIcon> = {
+  "book-fair": BookOpen, "museum-guide": Compass, "market-birthday": Utensils, "kite-making": Wind,
+  "olympic-gymnast": Sparkles, "riverside-park": Trees, "shopping-complex": Store, "poster-print": Monitor,
+  "little-prince": BookOpen, "market-sound": Volume2, "cycling-open-day": Bike,
+  phd: LibraryBig, grandpa: Bike, bakery: Utensils, maggie: Camera, ryan: Users,
+  eileen: Sparkles, chengdu: Trees, phone: Monitor, film: BookOpen,
+};
+export const storyColors: Record<string,string> = {
+  "book-fair": "pink", "museum-guide": "sage", "market-birthday": "apricot", "kite-making": "mist",
+  "olympic-gymnast": "mist", "riverside-park": "sage", "shopping-complex": "lilac", "poster-print": "mist",
+  "little-prince": "apricot", "market-sound": "lilac", "cycling-open-day": "sage",
+  phd: "mist", grandpa: "sage", bakery: "apricot", maggie: "lilac", ryan: "sage",
+  eileen: "mist", chengdu: "sage", phone: "mist", film: "pink",
+};
 export function StoryIcon({id}:{id:string}) {const Icon=storyIcons[id]||Lightbulb;return <span className={"tile-icon "+(storyColors[id]||"sage")}><Icon size={22} strokeWidth={1.65}/></span>;}
 export function Logo(){return <a className="brand" href="#/" aria-label="Speakbook 练习首页"><span className="logo-mark"><AudioLines size={24} strokeWidth={2}/></span><span>Speakbook<span className="brand-dot">.</span></span></a>}
 export function Nav({section}:{section:string}){
